@@ -58,6 +58,10 @@ import android.util.Log;
 
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.R.bool;
+import android.R.string;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
@@ -70,6 +74,7 @@ import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
+@SuppressLint("CommitPrefEdits")
 public class MainActivity extends Activity {
 
 	
@@ -81,10 +86,37 @@ public class MainActivity extends Activity {
 	private Switch remember;
 	private TextView infoStr;
 	private Encrypt encrypt;
+	private boolean websocketConnected = false; 
 	private final WebSocketConnection wsc = new WebSocketConnection();
 	private DeviceInfo thisDeviceInfo = new DeviceInfo();
 	private DeviceInfo[] otherDevices = new DeviceInfo[4];
 	private int otherDeviceNum = 0;
+	Handler heartBeatHandler  = new Handler();
+	Runnable sendHeartBeat = new Runnable() {
+		
+		public void run() {
+			if(websocketConnected)
+			{
+				System.out.println("send out heartbeat information");
+				JSONObject requestInfo = new JSONObject();
+				try {
+					requestInfo.put("type", 2);
+					requestInfo.put("content", thisDeviceInfo.status);
+					wsc.sendTextMessage(requestInfo.toString());
+
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			else{
+				System.out.println("the websocket is not established, so the heartbeat is not sent out");
+			}
+			heartBeatHandler.postDelayed(sendHeartBeat, 3000);  
+
+		}
+	};
+
 
 
 	private DefaultHttpClient client;
@@ -159,19 +191,17 @@ public class MainActivity extends Activity {
 		((EditText)findViewById(R.id.passwd)).setText(password);
 		
 		infoStr = (TextView)findViewById(R.id.info);
-		
-        
-
-
 	}
 
 	@Override
+
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
 	
+
 	private void saveUserInfo(String u, String p)
 	{
 		SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE);  
@@ -184,6 +214,19 @@ public class MainActivity extends Activity {
 		System.out.println("after commit, username is " + sharedPre.getString("username", "") + 
 				" password is " + sharedPre.getString("password", ""));
 	}
+	
+	
+	private void updatePassword(String newPassword)
+	{
+		SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE);  
+		Editor editor = sharedPre.edit(); 
+		editor.remove("password");
+		String newEncryptedPassword = encrypt.encrypt(newPassword);
+		System.out.println("in update password, new password is "  + newEncryptedPassword);
+		editor.putString("password", newEncryptedPassword);
+		editor.commit();
+	}
+	
 	
 	private int login() {
 		HttpPost post = new HttpPost("http://its.pku.edu.cn/cas/login");
@@ -246,6 +289,11 @@ public class MainActivity extends Activity {
 		}
 	}
 	
+	
+
+		
+		
+	
 	private String getPage(String url) {
 		HttpGet get = new HttpGet(url);
 		get.setHeader("Referer", "http://its.pku.edu.cn/netportal/netportal_UTF-8.jsp");
@@ -303,6 +351,7 @@ public class MainActivity extends Activity {
 
                     @Override
                     public void onOpen() {
+                    		websocketConnected = true;
                             System.out.println("onOpen");
                             try {
         						JSONObject requestInfo = new JSONObject();
@@ -392,6 +441,99 @@ public class MainActivity extends Activity {
 									
 								}
 								
+								//update other device's status
+								else if(infoType == 101)
+								{
+									try {
+										Boolean hasFind = false;
+										JSONObject otherDeviceInfo = jsonObject.getJSONObject("content");
+										String otherDeviceId = otherDeviceInfo.getString("device_id");
+										int otherDeviceStatus = otherDeviceInfo.getInt("status");
+										for(int i=0; i<4; i++)
+										{
+											if(otherDeviceId.equals(otherDevices[i].device_id))
+											{
+												otherDevices[i].status = otherDeviceStatus;
+												hasFind = true;
+												break;
+											}
+										}
+										if(!hasFind)
+											System.out.println("the update other device's status error");
+										
+									} catch (JSONException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+								}
+								
+								//update its own status
+								else if(infoType == 104)
+								{
+									try {
+										int newStatus = jsonObject.getInt("content");
+										thisDeviceInfo.status = newStatus;
+										if(newStatus == 1)
+										{
+											disconnectThis();
+										}
+										else if(newStatus == 3)
+										{
+											connect(1);
+										}
+										else if(newStatus == 4)
+										{
+											connect(2);
+										}
+										else
+										{
+											System.out.println("when changing status itself, unknown error");
+										}
+										
+									} catch (JSONException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+								}
+								
+								else if(infoType == 106)
+								{
+									 try {
+											JSONObject requestInfo = new JSONObject();
+											requestInfo.put("type", 1);
+											requestInfo.put("content", thisDeviceInfo.status);
+											wsc.sendTextMessage(requestInfo.toString());
+										} catch (JSONException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+								}
+								else if(infoType == 105)
+								{
+									disconnectAll();
+									try {
+										JSONObject requestInfo = new JSONObject();
+										requestInfo.put("type", 5);
+										requestInfo.put("content", JSONObject.NULL);
+										wsc.sendTextMessage(requestInfo.toString());
+									} catch (JSONException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+								}
+								
+								else if(infoType == 107)
+								{
+									try {
+										String newPassword = jsonObject.getString("content");
+										updatePassword(newPassword);
+										
+									} catch (JSONException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+								}
+								
 								
 								
                                 
@@ -407,7 +549,7 @@ public class MainActivity extends Activity {
 
 	}
 	
-	public void Connect(View view) 
+	public void connectButton(View view)
 	{
 		charge = (Switch)findViewById(R.id.charge);
 		remember = (Switch)findViewById(R.id.remember);
@@ -420,12 +562,24 @@ public class MainActivity extends Activity {
 			System.out.println("User chooses to store username " + username + " and password " + password);
 			saveUserInfo(username, password);
 		}
-		
+		if(charge_or_not)
+		{
+			connect(2);
+		}
+		else {
+			connect(1);
+		}
+	}
+	
+	//connectType equals 1 when this is a free connect, else equals 2.
+	private void connect(int connectType) 
+	{
+		final int ConnectType = connectType;
 		new Thread() {
 			public void run() {
 				String getaddr = "http://its.pku.edu.cn/netportal/PKUIPGW?cmd=open&type=";
 				int random = Math.abs((new Random()).nextInt() % 1000);
-				if(charge_or_not)
+				if(ConnectType == 2)
 				{
 					getaddr += "fee&fr=0&sid=" + random;
 					thisDeviceInfo.status = 4;
@@ -435,7 +589,6 @@ public class MainActivity extends Activity {
 					thisDeviceInfo.status = 3;
 				}
 				String response = cmd(getaddr);
-				//System.out.println("in connect, the response is " + response);
 				if(response.contains("wrong password")){
 					infoStr.post(new Runnable(){
 						public void run() {
@@ -471,7 +624,9 @@ public class MainActivity extends Activity {
 				} else if(response.contains("连接成功"))
 				{
 					//System.out.println("in 连接成功, the response is " + response);
+					heartBeatHandler.post(sendHeartBeat);
 					String [] resultStrings = response.split(">[012]个<", 0);
+					
 					if(resultStrings.length > 0)
 					{
 						int indexOfNext = response.indexOf(resultStrings[1]);
@@ -502,9 +657,14 @@ public class MainActivity extends Activity {
 			}
 		}.start();
 	}
-
 	
-	public void disconnectAll(View view) {
+	public void disconnectAllButton(View view)
+	{
+		disconnectAll();
+	}
+	
+	
+	private void disconnectAll() {
 		new Thread() {
 			public void run() {
 				int random = Math.abs((new Random()).nextInt() % 1000);
@@ -531,7 +691,12 @@ public class MainActivity extends Activity {
 
 	}
 	
-	public void disconnectThis(View view) {
+	public void disconnectThisButton(View view)
+	{
+		disconnectThis();
+	}
+	
+	private void disconnectThis() {
 		new Thread() {
 			public void run() {
 				double random = (new Random()).nextDouble() * 100;
@@ -569,6 +734,7 @@ public class MainActivity extends Activity {
 
 	}
 
+	
 	public void checkState(View veiw) {
 		/*
 		new Thread() {
