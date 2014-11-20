@@ -1,0 +1,71 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+   <EditText
+    android:id="@+id/usname"
+    android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:hint="user name" />
+    <EditText
+    android:id="@+id/passwd"
+    android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:hint="password" 
+	android:inputType="textPassword"/>
+
+    
+    <Switch
+        android:id="@+id/charge"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="打开收费地址" />
+    
+    <Switch
+        android:id="@+id/remember"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="记住登录用户" />
+    
+    <Button
+     android:id="@+id/connect"
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
+     android:text="connect" 
+     android:onClick="Connect"
+     />
+    <Button
+     android:id="@+id/disconnect_this"
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
+     android:text="disconnect this" 
+     android:onClick="disconnectThis"
+     />
+	<Button
+     android:id="@+id/disconnect_all"
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
+     android:text="disconnect all" 
+     android:onClick="disconnectAll"
+     
+     />
+	<Button
+     android:id="@+id/checkstate"
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
+     android:text="connect youtube" 
+     android:onClick="checkState"
+     
+     />
+    
+    <TextView
+        android:id="@+id/info"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="欢迎！"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+
+ 
+    
+</LinearLayout>
