@@ -29,7 +29,6 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
@@ -38,38 +37,22 @@ import org.apache.http.Header;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.example.newipgate.WebSocketPart.WebSocket;
 import com.example.newipgate.WebSocketPart.WebSocketConnection;
 import com.example.newipgate.WebSocketPart.WebSocketConnectionHandler;
 import com.example.newipgate.WebSocketPart.WebSocketException;
-import com.example.newipgate.WebSocketPart.WebSocketMessage;
-import com.example.newipgate.WebSocketPart.WebSocketOptions;
-import com.example.newipgate.WebSocketPart.WebSocketReader;
-import com.example.newipgate.WebSocketPart.WebSocketWriter;
-import com.example.newipgate.WebSocketPart.ByteBufferOutputStream;
-import com.example.newipgate.WebSocketPart.NoCopyByteArrayOutputStream;
-import com.example.newipgate.WebSocketPart.Utf8Validator;
 
 
-
-
-import android.renderscript.Type;
 import android.util.Log;
 
 
 import android.os.Bundle;
 import android.os.Handler;
-import android.R.bool;
-import android.R.string;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -112,7 +95,7 @@ public class MainActivity extends Activity {
 			else{
 				System.out.println("the websocket is not established, so the heartbeat is not sent out");
 			}
-			heartBeatHandler.postDelayed(sendHeartBeat, 3000);  
+			heartBeatHandler.postDelayed(sendHeartBeat, 300000);  
 
 		}
 	};
@@ -121,6 +104,7 @@ public class MainActivity extends Activity {
 
 	private DefaultHttpClient client;
 
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -191,16 +175,47 @@ public class MainActivity extends Activity {
 		((EditText)findViewById(R.id.passwd)).setText(password);
 		
 		infoStr = (TextView)findViewById(R.id.info);
+		
+		
 	}
 
-	@Override
 
+	
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
 	
+
+	private void changeOtherDevice(String DeviceID, int newStatus)
+	{
+		 try {
+				JSONObject requestInfo = new JSONObject();
+				requestInfo.put("type", 4);
+				JSONObject deviceInfo = new JSONObject();
+				deviceInfo.put("device_id", DeviceID);
+				deviceInfo.put("status", newStatus);
+				requestInfo.put("content", deviceInfo);
+				wsc.sendTextMessage(requestInfo.toString());
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
+	
+	private void sendChangePassword(String newPassword)
+	{
+		 try {
+				JSONObject requestInfo = new JSONObject();
+				requestInfo.put("type", 7);
+				requestInfo.put("content", newPassword);
+				wsc.sendTextMessage(requestInfo.toString());
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
 
 	private void saveUserInfo(String u, String p)
 	{
@@ -227,6 +242,19 @@ public class MainActivity extends Activity {
 		editor.commit();
 	}
 	
+	
+	private void updateOtherDevice()
+	{
+		try {
+			JSONObject requestInfo = new JSONObject();
+			requestInfo.put("type", 6);
+			requestInfo.put("content", JSONObject.NULL);
+			wsc.sendTextMessage(requestInfo.toString());
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	
 	private int login() {
 		HttpPost post = new HttpPost("http://its.pku.edu.cn/cas/login");
@@ -291,9 +319,6 @@ public class MainActivity extends Activity {
 	
 	
 
-		
-		
-	
 	private String getPage(String url) {
 		HttpGet get = new HttpGet(url);
 		get.setHeader("Referer", "http://its.pku.edu.cn/netportal/netportal_UTF-8.jsp");
@@ -318,6 +343,7 @@ public class MainActivity extends Activity {
 		}
 	}
 
+	
 	private String cmd(String cmdaddr) {
 		int statusCode = login();
 		Log.i(TAG, "login code is " + statusCode);
@@ -549,6 +575,7 @@ public class MainActivity extends Activity {
 
 	}
 	
+	
 	public void connectButton(View view)
 	{
 		charge = (Switch)findViewById(R.id.charge);
@@ -658,10 +685,12 @@ public class MainActivity extends Activity {
 		}.start();
 	}
 	
+	
 	public void disconnectAllButton(View view)
 	{
 		disconnectAll();
 	}
+	
 	
 	
 	private void disconnectAll() {
@@ -695,6 +724,7 @@ public class MainActivity extends Activity {
 	{
 		disconnectThis();
 	}
+	
 	
 	private void disconnectThis() {
 		new Thread() {
@@ -734,6 +764,7 @@ public class MainActivity extends Activity {
 
 	}
 
+	
 	
 	public void checkState(View veiw) {
 		/*
