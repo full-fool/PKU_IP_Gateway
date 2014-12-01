@@ -2,6 +2,7 @@ package com.example.newipgate;
 
 import java.util.regex.Pattern;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,10 +16,7 @@ public class Interaction {
 	
 	private final WebSocketConnection wsc = new WebSocketConnection();
 	private boolean websocketConnected = false; 
-	private static DeviceInfo thisDeviceInfo = new DeviceInfo();
-	private static DeviceInfo[] otherDevices = new DeviceInfo[4];
-	private int otherDeviceNum = 0;
-	private MainActivity mainActivity;
+	private static MainActivity mainActivity;
 	
 	
 	
@@ -28,10 +26,47 @@ public class Interaction {
 		mainActivity = thisActivity;
 	}
 	
-	//change this device's status, called when connection or disconnection happens.
-	public static void changeThisDeviceStatus(int newStatus)
-	{
-		thisDeviceInfo.status = newStatus;
+	public static void setMainActivity(MainActivity thisActivity){
+		mainActivity = thisActivity;
+	}
+	
+	public void testSend(){
+		if(websocketConnected){
+			 try {
+					JSONObject requestInfo = new JSONObject();
+					requestInfo.put("type", 3);
+					requestInfo.put("content", JSONObject.NULL);
+					System.out.println("the send json string is " + requestInfo.toString());
+					
+					wsc.sendTextMessage(requestInfo.toString());
+					
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}		
+			 }
+	}
+	
+	public Boolean isWebsocketConnected(){
+		return websocketConnected;
+	}
+	
+	public void updateConnectionStatus(){
+		if(websocketConnected){ 
+		try {
+				System.out.println("updateconnectionstatus successfully");
+				JSONObject requestInfo = new JSONObject();
+				requestInfo.put("type", 1);
+				requestInfo.put("content", PublicObjects.getThisDeviceStatus());
+				wsc.sendTextMessage(requestInfo.toString());
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		else{
+			System.out.println("in updateconnectionstatus, the websocket is already closed");
+		}
 	}
 	
 	//send heartBeat Information
@@ -43,7 +78,7 @@ public class Interaction {
 			JSONObject requestInfo = new JSONObject();
 			try {
 				requestInfo.put("type", 2);
-				requestInfo.put("content", thisDeviceInfo.status);
+				requestInfo.put("content", PublicObjects.getThisDeviceStatus());
 				wsc.sendTextMessage(requestInfo.toString());
 
 			} catch (JSONException e) {
@@ -60,7 +95,9 @@ public class Interaction {
 	//initiate the websocket connection
 	public void startWebSocket()
 	{
+		if(!websocketConnected){
 		try {
+			System.out.println("in start websocket, the status is disconnect");
             
             wsc.connect("ws://162.105.146.140:9000/login?student_id=1100012950&password=11223344433&type=1&status=3", 
             		new WebSocketConnectionHandler(){
@@ -72,7 +109,7 @@ public class Interaction {
 
                     @Override
                     public void onClose(int code, String reason) {
-                            System.out.println("onClose code = " + code + " reason="+reason);
+                            System.out.println("onClose code = " + code + " reason=" + reason);
                     }
 
                     @Override
@@ -111,11 +148,15 @@ public class Interaction {
             // TODO Auto-generated catch block
             e.printStackTrace();
     }
+		}
+		else{
+			System.out.println("in start websocket, the connection is already established");
+		}
 
 	}
 	
 	//change other device's status
-	private void changeOtherDevice(String DeviceID, int newStatus)
+	public void changeOtherDevice(String DeviceID, int newStatus)
 	{
 		 try {
 				JSONObject requestInfo = new JSONObject();
@@ -124,13 +165,13 @@ public class Interaction {
 				deviceInfo.put("device_id", DeviceID);
 				deviceInfo.put("status", newStatus);
 				requestInfo.put("content", deviceInfo);
+				System.out.println("in change other device, the sent string is " + requestInfo.toString());
 				wsc.sendTextMessage(requestInfo.toString());
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 	}
-
 	//change the password
 	private void sendChangePassword(String newPassword)
 	{
@@ -165,8 +206,8 @@ public class Interaction {
 		System.out.println("onTextMessage"+payload);
         if(Pattern.matches("[0-9a-z]+-[0-9a-z]+-[0-9a-z]+-[0-9a-z]+-[0-9a-z]+", payload))
         {
-        	thisDeviceInfo.device_id = payload;
-        	thisDeviceInfo.type = 1;
+        	PublicObjects.setThisDeviceDeviceID(payload);
+        	PublicObjects.setThisDeviceType(1);
         }
         else {
         	JSONObject jsonObject = null;
@@ -180,17 +221,57 @@ public class Interaction {
 				e.printStackTrace();
 			} 
 			
+			if(infoType == 3){
+				try {
+					String connectionString = jsonObject.getString("content");
+					//JSONObject connectionInfo = new JSONObject(connectionString);
+					if(connectionString.startsWith("\ufeff")){
+						System.out.println("starts with bom");
+						connectionString = connectionString.substring(1);
+					}
+					JSONArray contents = new JSONArray(connectionString);
+					System.out.println("there are " + contents.length() + "more devices");
+
+					for(int i=0; i<contents.length(); i++)
+					{
+						PublicObjects.otherDevices[i].device_id = ((JSONObject)contents.get(i)).getString("device_id");
+						PublicObjects.otherDevices[i].status = ((JSONObject)contents.get(i)).getInt("status");
+						PublicObjects.otherDevices[i].type = ((JSONObject)contents.get(i)).getInt("type");
+						PublicObjects.otherDevices[i].ip = ((JSONObject)contents.get(i)).getString("ip");
+						PublicObjects.otherDevices[i].location = ((JSONObject)contents.get(i)).getString("location");
+						PublicObjects.otherDevices[i].owner = ((JSONObject)contents.get(i)).getString("owner");
+					}
+					PublicObjects.otherDeviceNum = contents.length();
+					
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+				
 			//add new device
-			if(infoType == 102)
+			else if(infoType == 102)
 			{
 				try {
-					JSONObject connectionInfo = jsonObject.getJSONObject("content");
-					otherDevices[otherDeviceNum].device_id = connectionInfo.getString("device_id");
-					otherDevices[otherDeviceNum].status = connectionInfo.getInt("status");
-					otherDevices[otherDeviceNum].type = connectionInfo.getInt("type");
-					otherDevices[otherDeviceNum].ip = connectionInfo.getString("ip");
-					otherDevices[otherDeviceNum].location = connectionInfo.getString("location");
-					otherDeviceNum++;
+					String connectionString = jsonObject.getString("content");
+					JSONObject connectionInfo = new JSONObject(connectionString);
+					//JSONObject connectionInfo = jsonObject.getJSONObject("content");
+					if(!PublicObjects.getThisDeviceID().equals(connectionInfo.getString("device_id"))){
+
+						System.out.println("the device_id is different, old id is " + PublicObjects.getThisDeviceID() + " and new id is " 
+								+ connectionInfo.getString("device_id"));
+						PublicObjects.otherDevices[PublicObjects.otherDeviceNum].device_id = connectionInfo.getString("device_id");
+						PublicObjects.otherDevices[PublicObjects.otherDeviceNum].status = connectionInfo.getInt("status");
+						PublicObjects.otherDevices[PublicObjects.otherDeviceNum].type = connectionInfo.getInt("type");
+						PublicObjects.otherDevices[PublicObjects.otherDeviceNum].ip = connectionInfo.getString("ip");
+						PublicObjects.otherDevices[PublicObjects.otherDeviceNum].location = connectionInfo.getString("location");
+						PublicObjects.otherDevices[PublicObjects.otherDeviceNum].owner = connectionInfo.getString("owner");
+						PublicObjects.otherDeviceNum++;
+					}
+					
+					
+					
+					
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -204,24 +285,37 @@ public class Interaction {
 				try {
 					Boolean hasFind = false;
 					String deletedDeviceId = jsonObject.getString("content");
-					for(int i=0; i<4; i++)
+					
+					//disconnect this device
+					if(deletedDeviceId.equals(PublicObjects.getThisDeviceID())){
+						System.out.println("in 103, the deleted device is itself");
+						mainActivity.disconnectThis();
+					}
+					//delete other device's info
+					else{
+					for(int i=0; i<PublicObjects.otherDeviceNum; i++)
 					{
-						if(deletedDeviceId.equals(otherDevices[i].device_id))
+						//move the last device to this slot
+						if(deletedDeviceId.equals(PublicObjects.otherDevices[i].device_id))
 						{
-							otherDevices[i].device_id = null;
-							otherDeviceNum--;
+							PublicObjects.otherDevices[i].device_id = PublicObjects.otherDevices[PublicObjects.otherDeviceNum-1].device_id;
+							PublicObjects.otherDevices[i].status = PublicObjects.otherDevices[PublicObjects.otherDeviceNum-1].status;
+							PublicObjects.otherDevices[i].type = PublicObjects.otherDevices[PublicObjects.otherDeviceNum-1].type;
+							PublicObjects.otherDevices[i].ip = PublicObjects.otherDevices[PublicObjects.otherDeviceNum-1].ip;
+							PublicObjects.otherDevices[i].location = PublicObjects.otherDevices[PublicObjects.otherDeviceNum-1].location;
+							PublicObjects.otherDevices[i].owner = PublicObjects.otherDevices[PublicObjects.otherDeviceNum-1].owner;
+							PublicObjects.otherDeviceNum--;
 							hasFind = true;
 							break;
 						}
 					}
 					if(!hasFind)
-						System.out.println("the delete device error");
-					
+						System.out.println("the deleted device not found");
+					}
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}
-				
+				}	
 			}
 			
 			//update other device's status
@@ -234,9 +328,9 @@ public class Interaction {
 					int otherDeviceStatus = otherDeviceInfo.getInt("status");
 					for(int i=0; i<4; i++)
 					{
-						if(otherDeviceId.equals(otherDevices[i].device_id))
+						if(otherDeviceId.equals(PublicObjects.otherDevices[i].device_id))
 						{
-							otherDevices[i].status = otherDeviceStatus;
+							PublicObjects.otherDevices[i].status = otherDeviceStatus;
 							hasFind = true;
 							break;
 						}
@@ -255,7 +349,8 @@ public class Interaction {
 			{
 				try {
 					int newStatus = jsonObject.getInt("content");
-					thisDeviceInfo.status = newStatus;
+					//thisDeviceInfo.status = newStatus;
+					PublicObjects.setThisDeviceStatus(newStatus);
 					if(newStatus == 1)
 					{
 						mainActivity.disconnectThis();
@@ -284,7 +379,7 @@ public class Interaction {
 				 try {
 						JSONObject requestInfo = new JSONObject();
 						requestInfo.put("type", 1);
-						requestInfo.put("content", thisDeviceInfo.status);
+						requestInfo.put("content", PublicObjects.getThisDeviceStatus());
 						wsc.sendTextMessage(requestInfo.toString());
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
@@ -310,7 +405,7 @@ public class Interaction {
 				try {
 					String newPassword = jsonObject.getString("content");
 					mainActivity.updatePassword(newPassword);
-					
+						
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -322,25 +417,4 @@ public class Interaction {
             
 		}
 	}
-
-	/*
-	public void getDeviceList()
-	{
-		 try {
-				JSONObject requestInfo = new JSONObject();
-				requestInfo.put("type", 3);
-				requestInfo.put("content", JSONObject.NULL);
-				System.out.println("the send json string is " + requestInfo.toString());
-				
-				//wsc.sendTextMessage(requestInfo.toString());
-				
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	}
-
-*/
-	
-	
 }

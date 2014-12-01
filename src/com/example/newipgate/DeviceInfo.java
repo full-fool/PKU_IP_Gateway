@@ -6,8 +6,13 @@ public class DeviceInfo {
 	int type;
 	String ip;
 	String location;
+	String owner;
 	public DeviceInfo()
 	{
-		
+		device_id = null;
+		status = 1;
+		type = 1;
+		ip = null;
+		location = null;
 	}
 }

@@ -28,33 +28,46 @@
         android:layout_height="wrap_content"
         android:text="记住登录用户" />
     
+    <LinearLayout 
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" >
     <Button
      android:id="@+id/connect"
-     android:layout_width="fill_parent"
+     android:layout_width="wrap_content"
      android:layout_height="wrap_content"
-     android:text="connect" 
+     android:text="连接" 
      android:onClick="connectButton"
+     android:textSize="20sp"
      />
     <Button
      android:id="@+id/disconnect_this"
-     android:layout_width="fill_parent"
+     android:layout_width="wrap_content"
      android:layout_height="wrap_content"
-     android:text="disconnect this" 
+     android:text="断开连接" 
      android:onClick="disconnectThisButton"
+	 android:textSize="20sp"
+     
      />
 	<Button
      android:id="@+id/disconnect_all"
      android:layout_width="fill_parent"
      android:layout_height="wrap_content"
-     android:text="disconnect all" 
+     android:text="断开所有连接" 
      android:onClick="disconnectAllButton"
+     android:textSize="20sp"
+     
      
      />
+        
+    </LinearLayout>>
+    
 	<Button
      android:id="@+id/checkstate"
      android:layout_width="fill_parent"
      android:layout_height="wrap_content"
-     android:text="connect youtube" 
+     android:text="查看所有连接"
+     android:onClick="checkAllConnections" 
      
      />
     

@@ -2,6 +2,7 @@ package com.example.newipgate;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -34,19 +35,77 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
+import android.annotation.SuppressLint;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 
 
 
-public class ITSClient {
+
+public class ITSClient{
 	
 	
 	private static final String TAG = null;
 	
 	private DefaultHttpClient client;
 
-	MainActivity mainActivity;
+	private static MainActivity mainActivity;
+	
+	
+	public ITSClient(MainActivity thisActivity){
+		mainActivity = thisActivity;
+		
+		InputStream ins = mainActivity.getResources().openRawResource(R.raw.ca);
+		//InputStream ins = MainActivity.getResources().openRawResource(R.raw.ca);
+		CertificateFactory cerFactory;
+		try {
+			cerFactory = CertificateFactory.getInstance("X.509");
+			Certificate cer = (Certificate) cerFactory.generateCertificate(ins);
+			KeyStore keyStore = KeyStore.getInstance("PKCS12", "BC");
+			keyStore.load(null, null);
+			keyStore.setCertificateEntry("trust", cer);
+			SSLSocketFactory socketFactory = new SSLSocketFactory(keyStore);
+			Scheme sch = new Scheme("https", socketFactory, 443);
+			client = new DefaultHttpClient();
+			client.getConnectionManager().getSchemeRegistry().register(sch);
+			client.getParams().setParameter("http.protocol.cookie-policy", CookiePolicy.BEST_MATCH);
+			client.getParams().setParameter("http.protocol.cookie-policy", CookiePolicy.BROWSER_COMPATIBILITY);
+			client.getParams().setParameter(HttpConnectionParams.CONNECTION_TIMEOUT, 60000);
+		}
+		
+		catch (CertificateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (KeyStoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchProviderException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (KeyManagementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnrecoverableKeyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//infoStr = (TextView)findViewById(R.id.info);
+
+		
+	}
+	
+	public static  void setMainActivity(MainActivity thisActivity){
+		mainActivity = thisActivity;
+	}
 	
 	private int login() {
 		HttpPost post = new HttpPost("http://its.pku.edu.cn/cas/login");
@@ -150,56 +209,8 @@ public class ITSClient {
 		}
 	}
 
-	
-	public ITSClient(MainActivity thisActivity){
-		mainActivity = thisActivity;
-		
-		InputStream ins = mainActivity.getResources().openRawResource(R.raw.ca);
-		CertificateFactory cerFactory;
-		try {
-			cerFactory = CertificateFactory.getInstance("X.509");
-			Certificate cer = (Certificate) cerFactory.generateCertificate(ins);
-			KeyStore keyStore = KeyStore.getInstance("PKCS12", "BC");
-			keyStore.load(null, null);
-			keyStore.setCertificateEntry("trust", cer);
-			SSLSocketFactory socketFactory = new SSLSocketFactory(keyStore);
-			Scheme sch = new Scheme("https", socketFactory, 443);
-			client = new DefaultHttpClient();
-			client.getConnectionManager().getSchemeRegistry().register(sch);
-			client.getParams().setParameter("http.protocol.cookie-policy", CookiePolicy.BEST_MATCH);
-			client.getParams().setParameter("http.protocol.cookie-policy", CookiePolicy.BROWSER_COMPATIBILITY);
-			client.getParams().setParameter(HttpConnectionParams.CONNECTION_TIMEOUT, 60000);
-		}
-		
-		catch (CertificateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (KeyStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchProviderException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (KeyManagementException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnrecoverableKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		//infoStr = (TextView)findViewById(R.id.info);
 
-		
-	}
-
-	
+	//connectType=1, free, connectType=2, charge
 	public void connect(int connectType) 
 	{
 		final int ConnectType = connectType;
@@ -210,11 +221,9 @@ public class ITSClient {
 				if(ConnectType == 2)
 				{
 					getaddr += "fee&fr=0&sid=" + random;
-					Interaction.changeThisDeviceStatus(4);
 				}
 				else {
 					getaddr += "free&fr=0&sid=701";
-					Interaction.changeThisDeviceStatus(3);
 				}
 				String response = cmd(getaddr);
 				if(response.contains("wrong password")){
@@ -224,6 +233,7 @@ public class ITSClient {
 				else if(response.contains("重新输入")) {
 					mainActivity.ShowInfo("重新输入");
 					System.out.println("重新输入");
+
 				} else if(response.contains("达到设定值")) {
 					mainActivity.ShowInfo("当前连接超过预定值");
 					System.out.println("当前连接超过预定值");
@@ -236,14 +246,19 @@ public class ITSClient {
 				} else if(response.contains("连接成功"))
 				{
 					String [] resultStrings = response.split(">[012]个<", 0);
-					
+					if(ConnectType == 2){
+						PublicObjects.changeThisDeviceStatus(4);
+
+					}else {
+						PublicObjects.changeThisDeviceStatus(3);
+					}
+					mainActivity.startWebSocket();	
 					if(resultStrings.length > 0)
 					{
 						int indexOfNext = response.indexOf(resultStrings[1]);
 						final String connectionNum = response.substring(indexOfNext-3, indexOfNext-1);
 						mainActivity.ShowInfo("连接成功" + "\n当前连接：" + connectionNum);
 						System.out.println("连接成功" + "\n当前连接：" + connectionNum);
-						mainActivity.startWebSocket();	
 					}
 					else 
 					{
@@ -251,6 +266,7 @@ public class ITSClient {
 						System.out.println("连接成功" + "\n未知错误，无法获取连接数");
 					}
 					mainActivity.startHeartBeat();
+					mainActivity.updateConnectionStatus();
 				}
 				else {
 					mainActivity.ShowInfo("未知错误");
@@ -268,9 +284,11 @@ public class ITSClient {
 				String getaddr = "http://its.pku.edu.cn/netportal/PKUIPGW?cmd=close&type=allconn&fr=0&sid" + random;
 				String response = cmd(getaddr);
 				System.out.println("in disconnect all, the response is " + response);
-				if(response.contains("断开成功")) {
+				if(response.contains("断开成功") || response.contains("断开全部连接成功")) {
+					PublicObjects.setThisDeviceStatus(2);
 					mainActivity.ShowInfo("断开全部连接成功");
 					System.out.println("断开全部连接成功");
+					mainActivity.updateConnectionStatus();
 				}else{
 					mainActivity.ShowInfo("unknown error");					
 					System.out.println("unknown error");
@@ -301,8 +319,10 @@ public class ITSClient {
 				System.out.println("the disconnect this response is  " + responseBody);
 				
 				if(responseBody.contains("SUCCESS=YES")) {
+					PublicObjects.setThisDeviceStatus(1);
 					mainActivity.ShowInfo("网络断开成功");
 					System.out.println("网络断开成功");
+					mainActivity.updateConnectionStatus();
 				} else{
 					mainActivity.ShowInfo("unknown error");
 					System.out.println("unknown error");
@@ -311,5 +331,11 @@ public class ITSClient {
 		}.start();
 
 	}
+
+	
+	//webSocket part
+	
+	
+	
 
 }

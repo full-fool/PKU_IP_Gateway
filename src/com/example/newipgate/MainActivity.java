@@ -1,8 +1,12 @@
 package com.example.newipgate;
+
+
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.view.Menu;
@@ -12,7 +16,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 @SuppressLint("CommitPrefEdits")
-public class MainActivity extends Activity {
+public class MainActivity extends Activity{
 
 	
 	private String username;
@@ -41,14 +45,30 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
+		System.out.println("mainactivity oncreate");
+		if(!PublicObjects.isSet()){
+			PublicObjects publicObjects = new PublicObjects();
+
+			itsClient = new ITSClient(this);
+			
+			interaction = new Interaction(this);
+			
+			PublicObjects.setItsClient(itsClient);
+			
+			PublicObjects.setInteraction(interaction);
+			
+
+
+		}
+			
+		else{
+			itsClient = PublicObjects.getItsClientwithActivity(this);
+			interaction = PublicObjects.getInteractionwithActivity(this);
+		}
+		
 		encrypt = new Encrypt(this);
+		infoStr = (TextView)findViewById(R.id.info);
 
-		itsClient = new ITSClient(this);
-		
-		interaction = new Interaction(this);
-
-		
-		
 		//encrypt = new Encrypt(this);
 		SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE); 
 		username = sharedPre.getString("username", "");		
@@ -68,21 +88,28 @@ public class MainActivity extends Activity {
 		((EditText)findViewById(R.id.usname)).setText(username);
 		((EditText)findViewById(R.id.passwd)).setText(password);
 		
-		infoStr = (TextView)findViewById(R.id.info);
 		
 	}
-
+	
+	
+	
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
 	
+	public void updateConnectionStatus(){
+		interaction.updateConnectionStatus();
+	}
+	
 	public void ShowInfo(String content)
 	{
+		//infoStr = (TextView)findViewById(R.id.info);
 		final String showContent = content;
 		infoStr.post(new Runnable(){
 			public void run() {
+				System.out.println("in showinfo, the info is " + showContent);
 				infoStr.setText(showContent);
 			}
 		});
@@ -185,6 +212,12 @@ public class MainActivity extends Activity {
 		disconnectThis();
 	}
 
+	public void checkAllConnections(View view){
+		Intent intent = new Intent(MainActivity.this, AllConnections.class);
+		startActivity(intent);
+		
+
+	}
 
 	
 }
