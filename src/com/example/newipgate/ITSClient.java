@@ -2,9 +2,12 @@ package com.example.newipgate;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
@@ -188,6 +191,25 @@ public class ITSClient{
 		return getPage(cmdaddr);
 	}
 
+	
+	public static String md5(String string) {
+	    byte[] hash;
+	    try {
+	        hash = MessageDigest.getInstance("MD5").digest(string.getBytes("UTF-8"));
+	    } catch (NoSuchAlgorithmException e) {
+	        throw new RuntimeException("Huh, MD5 should be supported?", e);
+	    } catch (UnsupportedEncodingException e) {
+	        throw new RuntimeException("Huh, UTF-8 should be supported?", e);
+	    }
+
+	    StringBuilder hex = new StringBuilder(hash.length * 2);
+	    for (byte b : hash) {
+	        if ((b & 0xFF) < 0x10) hex.append("0");
+	        hex.append(Integer.toHexString(b & 0xFF));
+	    }
+	    return hex.toString();
+	}
+	
 	private String getPage(String url) {
 		HttpGet get = new HttpGet(url);
 		get.setHeader("Referer", "http://its.pku.edu.cn/netportal/netportal_UTF-8.jsp");
@@ -376,21 +398,29 @@ public class ITSClient{
 	}
 
 	//initiate the websocket connection
-	public void startWebSocket(int type)
+	public void startWebSocket(int IPtype)
 	{
 		if(!websocketConnected){
 		try {
-			System.out.println("in start websocket, the status is disconnect");
+			//System.out.println("in start websocket, the status is disconnect");
             String url = "";
-			if(type == 1){
+            String MD5password = "";
+			if(IPtype == 1){
             	url = "ws://[2001:da8:201:1146:6d69:95e2:9746:1d81]:9000/";
             }
 			else{
 				url = "ws://162.105.146.140:9000/";
 			}
-            //wsc.connect("ws://162.105.146.140:9000/login?student_id=1100012950&password=11223344433&type=1&status=3", 
-            //wsc.connect("ws://[2001:da8:201:1146:6d69:95e2:9746:1d81]:9000/login?student_id=1100012950&password=11223344433&type=1&status=3", 
-			wsc.connect(url + "login?student_id=1100012950&password=11223344433&type=1&status=3", 
+			
+			try {
+				MD5password = URLEncoder.encode(md5(mainActivity.getPassword()), "utf-8");
+			} catch (UnsupportedEncodingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} 
+			System.out.println("in startwebsocket, the user name is " + mainActivity.getUsername() + " password is " + MD5password +
+					" status " + mainActivity.getIntendedStatus());
+			wsc.connect(url + "login?student_id=" + mainActivity.getUsername() + "&password=" + MD5password + "&type=1&status=" + mainActivity.getIntendedStatus(), 
 					new WebSocketConnectionHandler(){
 
                     @Override

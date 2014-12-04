@@ -16,6 +16,7 @@ import org.apache.http.params.HttpConnectionParams;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.R.integer;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
@@ -65,7 +66,7 @@ public class MainActivity extends Activity{
 			else if(hasStartedTry && !itsClient.isWebsocketConnected()){
 				itsClient.startWebSocket(2);
 				hasStartedTry = true;
-				startWebsocketHandler.postDelayed(startWebsocket, 2000);  
+				return;
 			}
 			else{
 				return;
@@ -148,6 +149,17 @@ public class MainActivity extends Activity{
 	public String getPassword(){
 		return 		((EditText)findViewById(R.id.passwd)).getText().toString();
 
+	}
+	
+	public int getIntendedStatus(){
+		charge = (Switch)findViewById(R.id.charge);
+		if(charge.isChecked()){
+			return 4;
+		}
+		else {
+			return 3;
+		}
+		
 	}
 	/*
 	public void startHeartBeat(){
