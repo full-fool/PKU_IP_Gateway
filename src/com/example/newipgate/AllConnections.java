@@ -28,6 +28,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -50,7 +52,7 @@ public class AllConnections extends Activity{
 	private Adapter adapter;
 	int selectedOperation = 0; 
 	private ITSClient itsClient;
-	private Interaction interaction;
+
 
 	private ArrayList<HashMap<String, Object>> items=new ArrayList<HashMap<String, Object>>();
 	
@@ -61,70 +63,9 @@ public class AllConnections extends Activity{
 		
 		System.out.println("All Connections oncreate");
 		itsClient = PublicObjects.getItsClient();
-		interaction = PublicObjects.getInteraction();
 		
 		
-		
-		//Intent intent = this.getIntent(); 
-		//ITSClient itsClient = (ITSClient)intent.getSerializableExtra("itsClient");
-		//interaction.testSend();
-		
-		lv = (ListView) findViewById(R.id.list);
-		
-		HashMap<String, Object> map = new HashMap<String, Object>();
-		map.put("icon", getResources().getDrawable(R.drawable.android));
-		map.put("device_id", PublicObjects.thisDeviceInfo.device_id);
-		if(PublicObjects.thisDeviceInfo.status == DISCONNECTTHIS || PublicObjects.thisDeviceInfo.status == DISCONNECTALL)
-		{
-			map.put("status", "(本机)未连接");
-		}
-		else if(PublicObjects.thisDeviceInfo.status == FREE) {
-			map.put("status", "(本机)已连接免费地址");
-		}
-		else if(PublicObjects.thisDeviceInfo.status == CHARGE){
-			map.put("status", "(本机)已连接收费地址");
-		}
-		else{
-			map.put("status", "(本机)状态错误");
-		}
-		
-		items.add(map);
-
-		for (int i=0; i<PublicObjects.otherDeviceNum; i++) {
-			
-			HashMap<String, Object> newMap = new HashMap<String, Object>();
-			if(PublicObjects.otherDevices[i].type == IPHONE)
-			{
-				newMap.put("icon", getResources().getDrawable(R.drawable.iphone));
-			}
-			else {
-				newMap.put("icon", getResources().getDrawable(R.drawable.android));
-			}
-			
-			newMap.put("device_id", PublicObjects.otherDevices[i].device_id);
-			
-			if(PublicObjects.otherDevices[i].status == DISCONNECTTHIS)
-			{
-				newMap.put("status", "未连接");
-			}
-			else if(PublicObjects.thisDeviceInfo.status == FREE) {
-				newMap.put("status", "已连接免费地址");
-			}
-			else if(PublicObjects.thisDeviceInfo.status == CHARGE){
-				newMap.put("status", "已连接收费地址");
-			}
-			else{
-				newMap.put("status", "状态错误");
-			}
-			items.add(newMap);
-
-		}
-		
-		adapter = new Adapter(this, items, R.layout.app_item, new String[] {
-				"icon", "status", "device_id"}, new int[] { R.id.icon,R.id.connectionState, R.id.deviceID});
-		
-		lv.setAdapter(adapter);
-		
+		refresh();
 		
 		//things happen after the user click on one of these items 
 		lv.setOnItemClickListener(new AdapterView.OnItemClickListener(){
@@ -133,7 +74,7 @@ public class AllConnections extends Activity{
 				
 				
 				//only when the websocket is established, then the item will be clicked
-			if(!interaction.isWebsocketConnected()){
+			if(!itsClient.isWebsocketConnected()){
 				System.out.println("the websocket is not established");
 				return;
 				
@@ -171,7 +112,8 @@ public class AllConnections extends Activity{
 		                    	}
 		                    	//if the device is not itself, then updateOtherDeviceStatus
 		                    	else {
-		                    		interaction.changeOtherDevice(device_id, FREE);
+		                    		itsClient.changeOtherDevice(device_id, FREE);
+		                    		itsClient.getOtherDevices();
 								}		                    	
 		                    }
 		                    //connect charge
@@ -182,7 +124,8 @@ public class AllConnections extends Activity{
 		                    	}
 		                    	//if the device is not itself, then updateOtherDeviceStatus
 		                    	else {
-		                    		interaction.changeOtherDevice(device_id, CHARGE);
+		                    		itsClient.changeOtherDevice(device_id, CHARGE);
+		                    		itsClient.getOtherDevices();
 								}	
 							}
 		                    else {
@@ -193,7 +136,8 @@ public class AllConnections extends Activity{
 		                    	//if the device is not itself, then updateOtherDeviceStatus
 		                    	else {
 		                    		System.out.println("the device id is " + device_id + " is to be disconnected");
-		                    		interaction.changeOtherDevice(device_id, DISCONNECTTHIS);
+		                    		itsClient.changeOtherDevice(device_id, DISCONNECTTHIS);
+		                    		itsClient.getOtherDevices();
 								}	
 							}
 		                    
@@ -221,6 +165,80 @@ public class AllConnections extends Activity{
 	{
 		Intent intent = new Intent(AllConnections.this, MainActivity.class);
 		startActivity(intent);
+	}
+	
+	private void refresh(){
+		
+		itsClient.getOtherDevices();
+		items.clear();
+		lv = (ListView) findViewById(R.id.list);
+		
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put("icon", getResources().getDrawable(R.drawable.android));
+		map.put("device_id", PublicObjects.thisDeviceInfo.device_id);
+		if(PublicObjects.thisDeviceInfo.status == DISCONNECTTHIS || PublicObjects.thisDeviceInfo.status == DISCONNECTALL)
+		{
+			map.put("status", "(本机)未连接");
+		}
+		else if(PublicObjects.thisDeviceInfo.status == FREE) {
+			map.put("status", "(本机)已连接免费地址");
+		}
+		else if(PublicObjects.thisDeviceInfo.status == CHARGE){
+			map.put("status", "(本机)已连接收费地址");
+		}
+		else{
+			map.put("status", "(本机)状态错误" + PublicObjects.thisDeviceInfo.status);
+		}
+		
+		items.add(map);
+
+		for (int i=0; i<PublicObjects.otherDeviceNum; i++) {
+			
+			HashMap<String, Object> newMap = new HashMap<String, Object>();
+			if(PublicObjects.otherDevices[i].type == IPHONE)
+			{
+				newMap.put("icon", getResources().getDrawable(R.drawable.iphone));
+			}
+			else {
+				newMap.put("icon", getResources().getDrawable(R.drawable.android));
+			}
+			
+			newMap.put("device_id", PublicObjects.otherDevices[i].device_id);
+			
+			if(PublicObjects.otherDevices[i].status == DISCONNECTTHIS )
+			{
+				newMap.put("status", "未连接");
+			}
+			else if(PublicObjects.otherDevices[i].status == FREE) {
+				newMap.put("status", "已连接免费地址");
+			}
+			else if(PublicObjects.otherDevices[i].status == CHARGE){
+				newMap.put("status", "已连接收费地址");
+			}
+			else{
+				newMap.put("status", "状态错误" + PublicObjects.otherDevices[i].status);
+			}
+			items.add(newMap);
+
+		}
+		
+		adapter = new Adapter(this, items, R.layout.app_item, new String[] {
+				"icon", "status", "device_id"}, new int[] { R.id.icon,R.id.connectionState, R.id.deviceID});
+		
+		lv.setAdapter(adapter);
+	}
+	
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.main, menu);
+		return true;
+	}
+	
+	public boolean onOptionsItemSelected(MenuItem item) {
+		  // Handle presses on the action bar items
+		  refresh();
+		  return true;
+		
 	}
 	
 

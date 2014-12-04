@@ -2,6 +2,18 @@ package com.example.newipgate;
 
 
 
+import java.io.IOException;
+import java.util.Random;
+
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.annotation.SuppressLint;
@@ -14,6 +26,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 @SuppressLint("CommitPrefEdits")
 public class MainActivity extends Activity{
@@ -27,18 +40,40 @@ public class MainActivity extends Activity{
 	private Encrypt encrypt;
 	private TextView infoStr;
 	private ITSClient itsClient;
-	private Interaction interaction;
-
+	private Boolean hasStartedTry = false;
+	//private Interaction interaction;
+/*
 	Handler heartBeatHandler  = new Handler();
 	Runnable sendHeartBeat = new Runnable() {
 		
 		public void run() {
-			interaction.sendHeartBeat();
+			itsClient.sendHeartBeat();
 			heartBeatHandler.postDelayed(sendHeartBeat, 300000);  
 
 		}
 	};
+*/
+	Handler startWebsocketHandler = new Handler();
+	Runnable startWebsocket = new Runnable() {
+		
+		public void run() {
+			if(!hasStartedTry && !itsClient.isWebsocketConnected()){
+				itsClient.startWebSocket(1);
+				hasStartedTry = true;
+				startWebsocketHandler.postDelayed(startWebsocket, 2000);  
+			}
+			else if(hasStartedTry && !itsClient.isWebsocketConnected()){
+				itsClient.startWebSocket(2);
+				hasStartedTry = true;
+				startWebsocketHandler.postDelayed(startWebsocket, 2000);  
+			}
+			else{
+				return;
+			}
+			
 
+		}
+	};
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -47,23 +82,15 @@ public class MainActivity extends Activity{
 		
 		System.out.println("mainactivity oncreate");
 		if(!PublicObjects.isSet()){
-			PublicObjects publicObjects = new PublicObjects();
+			PublicObjects.initiateOtherDevice();
 
 			itsClient = new ITSClient(this);
 			
-			interaction = new Interaction(this);
-			
 			PublicObjects.setItsClient(itsClient);
-			
-			PublicObjects.setInteraction(interaction);
-			
-
-
 		}
 			
 		else{
 			itsClient = PublicObjects.getItsClientwithActivity(this);
-			interaction = PublicObjects.getInteractionwithActivity(this);
 		}
 		
 		encrypt = new Encrypt(this);
@@ -95,26 +122,23 @@ public class MainActivity extends Activity{
 	
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
+		//getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
 	
-	public void updateConnectionStatus(){
-		interaction.updateConnectionStatus();
-	}
-	
+
 	public void ShowInfo(String content)
 	{
 		//infoStr = (TextView)findViewById(R.id.info);
 		final String showContent = content;
 		infoStr.post(new Runnable(){
 			public void run() {
-				System.out.println("in showinfo, the info is " + showContent);
 				infoStr.setText(showContent);
 			}
 		});
 	}
 	
+
 	
 	public String getUsername(){
 		return 		((EditText)findViewById(R.id.usname)).getText().toString();
@@ -125,15 +149,16 @@ public class MainActivity extends Activity{
 		return 		((EditText)findViewById(R.id.passwd)).getText().toString();
 
 	}
-	
+	/*
 	public void startHeartBeat(){
 		heartBeatHandler.post(sendHeartBeat);
 	}
+	*/
 	
-	public void startWebSocket()
-	{
-		interaction.startWebSocket();
+	public void tryStartWebsocket(){
+		startWebsocketHandler.post(startWebsocket);
 	}
+	
 	
 
 	private void saveUserInfo(String u, String p)
@@ -182,11 +207,9 @@ public class MainActivity extends Activity{
 		}
 		if(charge_or_not)
 		{
-			//itsClient.connect(2);
 			connect(2);
 		}
 		else {
-			//itsClient.connect(1);
 			connect(1);
 		}
 	}
@@ -213,11 +236,75 @@ public class MainActivity extends Activity{
 	}
 
 	public void checkAllConnections(View view){
+		if(!itsClient.isWebsocketConnected()){
+			ShowInfo("服务器连接未建立，请稍候再试");
+			return;
+		}
 		Intent intent = new Intent(MainActivity.this, AllConnections.class);
 		startActivity(intent);
-		
+	}
+	
+	public void refresh(View view){
+		itsClient.updateOtherDevice();
+	}
+	
+	public void checkStatus(View view){
+		//itsClient.updateOtherDevice();
+		new Thread() {
+			public void run() {
+				 final int REQUEST_TIMEOUT = 2*1000;
+				 final int SO_TIMEOUT = 2*1000; 
+				String getaddr = "http://www.baidu.com";
+				HttpGet get = new HttpGet(getaddr);
+				BasicHttpParams httpParams = new BasicHttpParams();  
+			    HttpConnectionParams.setConnectionTimeout(httpParams, REQUEST_TIMEOUT);  
+			    HttpConnectionParams.setSoTimeout(httpParams, SO_TIMEOUT);  
+			    HttpClient client = new DefaultHttpClient(httpParams);  
+				ResponseHandler<String> responseHandler = new BasicResponseHandler();
+				String responseBody = "";
+				try {
+					responseBody = client.execute(get, responseHandler);
+				} catch (ClientProtocolException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				//未连接网关
+				if(responseBody.equals("")){
+					ShowInfo("当前连接状态：未连接");
+				}
+				else {
+					getaddr = "http://www.stackoverflow.com";
+					HttpGet get2 = new HttpGet(getaddr);
+					responseBody = "";
+					try {
+						responseBody = client.execute(get2, responseHandler);
+					} catch (ClientProtocolException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					if(responseBody.equals("")){
+						ShowInfo("当前连接状态：免费网址");
+					}
+					else{
+						ShowInfo("当前连接状态：收费网址");
+					}
+					
+				}
+				
+				System.out.println("the disconnect this response is  " + responseBody);
+				
+			}
+		}.start();
 
+	
 	}
 
+	
 	
 }

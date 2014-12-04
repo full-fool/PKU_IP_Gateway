@@ -38,7 +38,7 @@
      android:layout_height="wrap_content"
      android:text="连接" 
      android:onClick="connectButton"
-     android:textSize="20sp"
+     android:textSize="15sp"
      />
     <Button
      android:id="@+id/disconnect_this"
@@ -46,22 +46,45 @@
      android:layout_height="wrap_content"
      android:text="断开连接" 
      android:onClick="disconnectThisButton"
-	 android:textSize="20sp"
+	 android:textSize="15sp"
      
      />
 	<Button
      android:id="@+id/disconnect_all"
-     android:layout_width="fill_parent"
+     android:layout_width="wrap_content"
      android:layout_height="wrap_content"
      android:text="断开所有连接" 
      android:onClick="disconnectAllButton"
-     android:textSize="20sp"
+     android:textSize="15sp"
      
      
      />
+	
+	 <Button
+     android:id="@+id/disconnect_this"
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
+     android:text="刷新" 
+     android:onClick="refresh"
+	 android:textSize="15sp"
+     
+     />
         
-    </LinearLayout>>
+    </LinearLayout>
     
+     <LinearLayout 
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" >
+	<Button
+     android:id="@+id/checkstate"
+     android:layout_width="wrap_content"
+     android:layout_height="wrap_content"
+     android:text="查看状态"
+     android:onClick="checkStatus" 
+     
+     />
+	
 	<Button
      android:id="@+id/checkstate"
      android:layout_width="fill_parent"
@@ -70,6 +93,7 @@
      android:onClick="checkAllConnections" 
      
      />
+	</LinearLayout>
     
     <TextView
         android:id="@+id/info"

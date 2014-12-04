@@ -1,13 +1,11 @@
 package com.example.newipgate;
 
-import android.R.bool;
 import android.widget.TextView;
 
 
 
 public class PublicObjects {
 	private static ITSClient publicItsClient;
-	private static Interaction publicInteraction;
 	public static DeviceInfo thisDeviceInfo = new DeviceInfo();
 	public static DeviceInfo[] otherDevices = new DeviceInfo[4];
 	public static int otherDeviceNum = 0;
@@ -16,10 +14,13 @@ public class PublicObjects {
 	private static boolean isSet = false;
 
 	public PublicObjects(){
+		
+	}
+	
+	public static void initiateOtherDevice(){
 		for(int i=0; i<4; i++){
 			otherDevices[i] = new DeviceInfo();
 		}
-		isSet = true;
 	}
 	
 	public static void setInfoStr(TextView v){
@@ -34,17 +35,11 @@ public class PublicObjects {
 		return isSet;
 	}
 	
-	public static void setInteraction(Interaction thisInteraction){
-		publicInteraction = thisInteraction;
-	}
-	
-	public static Interaction getInteraction(){
-		return publicInteraction;
-	}
 	
 	public static void setItsClient(ITSClient thisClient)
 	{
 		publicItsClient = thisClient;
+		isSet = true;
 	}
 	
 	public static ITSClient getItsClientwithActivity(MainActivity thisActivity)
@@ -53,11 +48,6 @@ public class PublicObjects {
 		return publicItsClient;
 	}
 	
-	public static Interaction getInteractionwithActivity(MainActivity thisActivity)
-	{
-		Interaction.setMainActivity(thisActivity);
-		return publicInteraction;
-	}
 	
 	public static ITSClient getItsClient()
 	{
