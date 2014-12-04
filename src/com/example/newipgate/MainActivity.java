@@ -16,10 +16,14 @@ import org.apache.http.params.HttpConnectionParams;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.R.integer;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.view.Menu;
@@ -76,12 +80,33 @@ public class MainActivity extends Activity{
 		}
 	};
 	
+	private ServiceConnection mConn = new ServiceConnection()
+
+	{
+				public void onServiceConnected(ComponentName name,
+						IBinder service) {
+					itsClient=((ITSClient.MyBinder)service).getService();
+					
+				}
+				@Override
+				public void onServiceDisconnected(ComponentName name) {
+					itsClient = null;					
+				}  
+	};
+	
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
+		PublicObjects.setCurrentMainActivity(MainActivity.this);
+		
 		System.out.println("mainactivity oncreate");
+		Intent intent = new Intent(this,ITSClient.class);
+		bindService(intent, mConn, Context.BIND_AUTO_CREATE); 
+		ITSClient.setMainActivity(MainActivity.this);
+		/*
 		if(!PublicObjects.isSet()){
 			PublicObjects.initiateOtherDevice();
 
@@ -93,7 +118,7 @@ public class MainActivity extends Activity{
 		else{
 			itsClient = PublicObjects.getItsClientwithActivity(this);
 		}
-		
+		*/
 		encrypt = new Encrypt(this);
 		infoStr = (TextView)findViewById(R.id.info);
 
@@ -254,6 +279,10 @@ public class MainActivity extends Activity{
 		}
 		Intent intent = new Intent(MainActivity.this, AllConnections.class);
 		startActivity(intent);
+	}
+	
+	public void changePasswordToServer(View view){
+		itsClient.sendChangePassword(getPassword());
 	}
 	
 	public void refresh(View view){

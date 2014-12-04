@@ -36,6 +36,7 @@
             android:value="com.example.newipgate.MainActivity" />
        
     </activity>
+    <service android:enabled="true" android:name="com.example.newipgate.ITSClient" />
     </application>
 
 </manifest>

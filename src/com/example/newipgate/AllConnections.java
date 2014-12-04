@@ -22,12 +22,16 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -56,13 +60,29 @@ public class AllConnections extends Activity{
 
 	private ArrayList<HashMap<String, Object>> items=new ArrayList<HashMap<String, Object>>();
 	
+	
+	private ServiceConnection mConn = new ServiceConnection()
+
+	{
+				public void onServiceConnected(ComponentName name,
+						IBinder service) {
+					itsClient=((ITSClient.MyBinder)service).getService();
+					itsClient.getOtherDevices();
+					
+				}
+				@Override
+				public void onServiceDisconnected(ComponentName name) {
+					itsClient = null;					
+				}  
+	};
+	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.all_connections);
-		
-		
-		System.out.println("All Connections oncreate");
-		itsClient = PublicObjects.getItsClient();
+		Intent intent = new Intent(this,ITSClient.class);
+
+		bindService(intent, mConn, Context.BIND_AUTO_CREATE); 
+
 		
 		
 		refresh();
@@ -152,15 +172,8 @@ public class AllConnections extends Activity{
 		    
 		    });
 		    
+		    
 	}
-	
-	/*
-	protected void onDestroy(){
-		super.onDestroy();
-		System.out.println("allConnections destroied");
-	}
-	*/
-	
 	public void goBack(View view)
 	{
 		Intent intent = new Intent(AllConnections.this, MainActivity.class);
@@ -169,7 +182,6 @@ public class AllConnections extends Activity{
 	
 	private void refresh(){
 		
-		itsClient.getOtherDevices();
 		items.clear();
 		lv = (ListView) findViewById(R.id.list);
 		

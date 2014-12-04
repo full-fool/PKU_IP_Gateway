@@ -44,13 +44,18 @@ import org.json.JSONObject;
 import com.example.newipgate.WebSocketPart.WebSocketConnection;
 import com.example.newipgate.WebSocketPart.WebSocketConnectionHandler;
 import com.example.newipgate.WebSocketPart.WebSocketException;
+
+import android.app.Service;
+import android.content.Intent;
+import android.os.Binder;
+import android.os.IBinder;
 import android.util.Log;
 
 
 
 
 
-public class ITSClient{
+public class ITSClient extends Service{
 	
 	
 	private static final String TAG = null;
@@ -63,10 +68,9 @@ public class ITSClient{
 	
 	private boolean websocketConnected = false; 
 	
-	
-	public ITSClient(MainActivity thisActivity){
-		mainActivity = thisActivity;
-		
+	public void onCreate() {
+		super.onCreate(); 
+		mainActivity = PublicObjects.getCurrentMainActivity();
 		InputStream ins = mainActivity.getResources().openRawResource(R.raw.ca);
 		CertificateFactory cerFactory;
 		try {
@@ -106,11 +110,57 @@ public class ITSClient{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		//infoStr = (TextView)findViewById(R.id.info);
+	  }
+	/*
+	 public ITSClient(MainActivity thisActivity) {
+		 mainActivity = thisActivity;
+			
+			InputStream ins = mainActivity.getResources().openRawResource(R.raw.ca);
+			CertificateFactory cerFactory;
+			try {
+				cerFactory = CertificateFactory.getInstance("X.509");
+				Certificate cer = (Certificate) cerFactory.generateCertificate(ins);
+				KeyStore keyStore = KeyStore.getInstance("PKCS12", "BC");
+				keyStore.load(null, null);
+				keyStore.setCertificateEntry("trust", cer);
+				SSLSocketFactory socketFactory = new SSLSocketFactory(keyStore);
+				Scheme sch = new Scheme("https", socketFactory, 443);
+				client = new DefaultHttpClient();
+				client.getConnectionManager().getSchemeRegistry().register(sch);
+				client.getParams().setParameter("http.protocol.cookie-policy", CookiePolicy.BEST_MATCH);
+				client.getParams().setParameter("http.protocol.cookie-policy", CookiePolicy.BROWSER_COMPATIBILITY);
+				client.getParams().setParameter(HttpConnectionParams.CONNECTION_TIMEOUT, 60000);
+			}
+			
+			catch (CertificateException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (KeyStoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchProviderException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchAlgorithmException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (KeyManagementException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (UnrecoverableKeyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 
-		
-	}
+	 }
+	 
+	 */
+	
+	
 	
 	public static  void setMainActivity(MainActivity thisActivity){
 		mainActivity = thisActivity;
@@ -511,7 +561,7 @@ public class ITSClient{
 	
 	
 	//change the password
-	private void sendChangePassword(String newPassword)
+	public void sendChangePassword(String newPassword)
 	{
 		 try {
 				JSONObject requestInfo = new JSONObject();
@@ -752,5 +802,27 @@ public class ITSClient{
             
 		}
 	}
+
+	public class MyBinder extends Binder
+
+	{
+	      public ITSClient getService()
+
+	     {
+	    	  return ITSClient.this;  //返回service对象本身
+	     }  
+	}
+	
+	private MyBinder mBinder = new MyBinder();
+	
+	@Override
+	public IBinder onBind(Intent intent) {
+		// TODO Auto-generated method stub
+		return mBinder;
+	}
+	
+	
+
+
 
 }

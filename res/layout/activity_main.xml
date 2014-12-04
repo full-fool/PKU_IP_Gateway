@@ -82,8 +82,23 @@
      android:layout_height="wrap_content"
      android:text="查看状态"
      android:onClick="checkStatus" 
+     android:textSize="15sp"
+     
+     
      
      />
+	
+	<Button
+     android:id="@+id/checkstate"
+     android:layout_width="wrap_content"
+     android:layout_height="wrap_content"
+     android:text="更改密码"
+     android:onClick="changePasswordToServer" 
+    android:textSize="15sp"
+     
+     
+     />
+	
 	
 	<Button
      android:id="@+id/checkstate"
@@ -91,6 +106,8 @@
      android:layout_height="wrap_content"
      android:text="查看所有连接"
      android:onClick="checkAllConnections" 
+     android:textSize="15sp"
+     
      
      />
 	</LinearLayout>

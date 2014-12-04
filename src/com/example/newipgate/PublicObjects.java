@@ -10,11 +10,20 @@ public class PublicObjects {
 	public static DeviceInfo[] otherDevices = new DeviceInfo[4];
 	public static int otherDeviceNum = 0;
 	private static TextView infoStr;
+	public static MainActivity currentMainActivity;
 
 	private static boolean isSet = false;
 
 	public PublicObjects(){
 		
+	}
+	
+	public static void setCurrentMainActivity(MainActivity thisActivity){
+		currentMainActivity = thisActivity;
+	}
+	
+	public static MainActivity getCurrentMainActivity(){
+		return currentMainActivity;
 	}
 	
 	public static void initiateOtherDevice(){
@@ -42,17 +51,8 @@ public class PublicObjects {
 		isSet = true;
 	}
 	
-	public static ITSClient getItsClientwithActivity(MainActivity thisActivity)
-	{
-		ITSClient.setMainActivity(thisActivity);
-		return publicItsClient;
-	}
 	
 	
-	public static ITSClient getItsClient()
-	{
-		return publicItsClient;
-	}
 	
 	public static void setThisDeviceDeviceID(String _device_id)
 	{
