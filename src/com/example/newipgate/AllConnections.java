@@ -31,6 +31,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -51,6 +52,7 @@ public class AllConnections extends Activity{
 	private final int DISCONNECTALL = 2;
 	private final int ANDROID = 1;
 	private final int IPHONE = 2;
+	private boolean hasRefreshed = false;
 
 
 	private Adapter adapter;
@@ -61,13 +63,29 @@ public class AllConnections extends Activity{
 	private ArrayList<HashMap<String, Object>> items=new ArrayList<HashMap<String, Object>>();
 	
 	
+
+	Handler refreshHandler = new Handler();
+	Runnable activeRefresh = new Runnable() {
+		
+		public void run() {
+			System.out.println("active refresh executed!");
+			refresh();
+			if(!hasRefreshed){
+				hasRefreshed = true;
+				refreshHandler.postDelayed(activeRefresh, 3000);  
+			}
+
+		}
+	};
+	
+	
 	private ServiceConnection mConn = new ServiceConnection()
 
 	{
 				public void onServiceConnected(ComponentName name,
 						IBinder service) {
 					itsClient=((ITSClient.MyBinder)service).getService();
-					itsClient.getOtherDevices();
+					//itsClient.getOtherDevices();
 					
 				}
 				@Override
@@ -102,10 +120,10 @@ public class AllConnections extends Activity{
 			 ListView listView = (ListView)parent;
 			 final int selectedPosition = position;  
 			 HashMap<String, Object> map = (HashMap<String, Object>) listView.getItemAtPosition(position);
-			 //String deviceStatus = map.get("status").toString();  
+
 			 //device_id只有在连接建立之后才有
 			 final String device_id = map.get("device_id").toString();
-			 //System.out.println("the touched device_id is " + device_id);
+			 selectedOperation = 0;
 			 final String[] arrayFruit = new String[] { "连接免费网址", "连接收费网址", "断开连接"}; 
 		        Dialog alertDialog = new AlertDialog.Builder(AllConnections.this). 
 		                setTitle("请选择将要执行的操作"). 
@@ -160,7 +178,8 @@ public class AllConnections extends Activity{
 		                    		itsClient.getOtherDevices();
 								}	
 							}
-		                    
+		                    hasRefreshed = false;
+		                    refreshHandler.post(activeRefresh);
 		                    } 
 		                }). setPositiveButton("取消", new DialogInterface.OnClickListener() { 
 		 		                public void onClick(DialogInterface dialog, int which) { 
@@ -181,6 +200,8 @@ public class AllConnections extends Activity{
 	}
 	
 	private void refresh(){
+		//System.out.println("before refresh");
+		//PublicObjects.printOtherDevices();
 		
 		items.clear();
 		lv = (ListView) findViewById(R.id.list);
@@ -203,7 +224,7 @@ public class AllConnections extends Activity{
 		}
 		
 		items.add(map);
-
+		//System.out.println("in refresh, otherdevicenum is "+ PublicObjects.otherDeviceNum);
 		for (int i=0; i<PublicObjects.otherDeviceNum; i++) {
 			
 			HashMap<String, Object> newMap = new HashMap<String, Object>();
@@ -216,6 +237,7 @@ public class AllConnections extends Activity{
 			}
 			
 			newMap.put("device_id", PublicObjects.otherDevices[i].device_id);
+			//System.out.println("in refresh, the device_id is " + PublicObjects.otherDevices[i].device_id);
 			
 			if(PublicObjects.otherDevices[i].status == DISCONNECTTHIS )
 			{
@@ -238,6 +260,8 @@ public class AllConnections extends Activity{
 				"icon", "status", "device_id"}, new int[] { R.id.icon,R.id.connectionState, R.id.deviceID});
 		
 		lv.setAdapter(adapter);
+		//System.out.println("after refresh");
+		//PublicObjects.printOtherDevices();
 	}
 	
 	public boolean onCreateOptionsMenu(Menu menu) {

@@ -12,7 +12,7 @@ public class PublicObjects {
 	private static TextView infoStr;
 	public static MainActivity currentMainActivity;
 
-	private static boolean isSet = false;
+	private static boolean otherDevicesIsInitiated = false;
 
 	public PublicObjects(){
 		
@@ -20,11 +20,30 @@ public class PublicObjects {
 	
 	public static void setCurrentMainActivity(MainActivity thisActivity){
 		currentMainActivity = thisActivity;
+		if(!otherDevicesIsInitiated){
+			initiateOtherDevice();
+			otherDevicesIsInitiated = true;
+		}
+		
+	}
+	
+	public static void printOtherDevices(){
+		System.out.println("the device number is " + otherDeviceNum);
+		for(int i=0; i<4; i++){
+			System.out.println("device " + i);
+			if(otherDevices[i].device_id==null){
+				System.out.println("null");
+			}
+			else{
+				System.out.println("device id: " + otherDevices[i].device_id + " status: " + otherDevices[i].status );
+			}
+		}
 	}
 	
 	public static MainActivity getCurrentMainActivity(){
 		return currentMainActivity;
 	}
+	
 	
 	public static void initiateOtherDevice(){
 		for(int i=0; i<4; i++){
@@ -40,16 +59,7 @@ public class PublicObjects {
 		return infoStr;
 	}
 	
-	public static boolean isSet(){
-		return isSet;
-	}
-	
-	
-	public static void setItsClient(ITSClient thisClient)
-	{
-		publicItsClient = thisClient;
-		isSet = true;
-	}
+
 	
 	
 	

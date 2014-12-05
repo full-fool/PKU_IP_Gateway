@@ -47,7 +47,7 @@ public class MainActivity extends Activity{
 	private ITSClient itsClient;
 	private Boolean hasStartedTry = false;
 	//private Interaction interaction;
-/*
+
 	Handler heartBeatHandler  = new Handler();
 	Runnable sendHeartBeat = new Runnable() {
 		
@@ -57,7 +57,7 @@ public class MainActivity extends Activity{
 
 		}
 	};
-*/
+
 	Handler startWebsocketHandler = new Handler();
 	Runnable startWebsocket = new Runnable() {
 		
@@ -100,8 +100,8 @@ public class MainActivity extends Activity{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
-		PublicObjects.setCurrentMainActivity(MainActivity.this);
 		
+		PublicObjects.setCurrentMainActivity(MainActivity.this);
 		System.out.println("mainactivity oncreate");
 		Intent intent = new Intent(this,ITSClient.class);
 		bindService(intent, mConn, Context.BIND_AUTO_CREATE); 
@@ -186,11 +186,11 @@ public class MainActivity extends Activity{
 		}
 		
 	}
-	/*
+	
 	public void startHeartBeat(){
 		heartBeatHandler.post(sendHeartBeat);
 	}
-	*/
+	
 	
 	public void tryStartWebsocket(){
 		startWebsocketHandler.post(startWebsocket);
@@ -282,10 +282,18 @@ public class MainActivity extends Activity{
 	}
 	
 	public void changePasswordToServer(View view){
+		if(!itsClient.isWebsocketConnected()){
+			ShowInfo("服务器连接未建立，请稍候再试");
+			return;
+		}
 		itsClient.sendChangePassword(getPassword());
 	}
 	
 	public void refresh(View view){
+		if(!itsClient.isWebsocketConnected()){
+			ShowInfo("服务器连接未建立，请稍候再试");
+			return;
+		}
 		itsClient.updateOtherDevice();
 	}
 	

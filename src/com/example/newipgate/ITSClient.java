@@ -67,7 +67,7 @@ public class ITSClient extends Service{
 	private final WebSocketConnection wsc = new WebSocketConnection();
 	
 	private boolean websocketConnected = false; 
-	
+		
 	public void onCreate() {
 		super.onCreate(); 
 		mainActivity = PublicObjects.getCurrentMainActivity();
@@ -111,55 +111,6 @@ public class ITSClient extends Service{
 			e.printStackTrace();
 		}
 	  }
-	/*
-	 public ITSClient(MainActivity thisActivity) {
-		 mainActivity = thisActivity;
-			
-			InputStream ins = mainActivity.getResources().openRawResource(R.raw.ca);
-			CertificateFactory cerFactory;
-			try {
-				cerFactory = CertificateFactory.getInstance("X.509");
-				Certificate cer = (Certificate) cerFactory.generateCertificate(ins);
-				KeyStore keyStore = KeyStore.getInstance("PKCS12", "BC");
-				keyStore.load(null, null);
-				keyStore.setCertificateEntry("trust", cer);
-				SSLSocketFactory socketFactory = new SSLSocketFactory(keyStore);
-				Scheme sch = new Scheme("https", socketFactory, 443);
-				client = new DefaultHttpClient();
-				client.getConnectionManager().getSchemeRegistry().register(sch);
-				client.getParams().setParameter("http.protocol.cookie-policy", CookiePolicy.BEST_MATCH);
-				client.getParams().setParameter("http.protocol.cookie-policy", CookiePolicy.BROWSER_COMPATIBILITY);
-				client.getParams().setParameter(HttpConnectionParams.CONNECTION_TIMEOUT, 60000);
-			}
-			
-			catch (CertificateException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (KeyStoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchProviderException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (KeyManagementException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (UnrecoverableKeyException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-
-	 }
-	 
-	 */
-	
 	
 	
 	public static  void setMainActivity(MainActivity thisActivity){
@@ -272,9 +223,6 @@ public class ITSClient extends Service{
 			//if(newResponse.contains("达到设定值") || newResponse.contains("连接成功"))
 			if(newResponse.contains("达到设定值") || newResponse.contains("连接成功") || newResponse.contains("断开成功"))
 				return newResponse;
-			
-			//System.out.println("the itsresult is " + client.execute(get, responseHandler));
-			//Log.i(TAG, responseBody);
 			return responseBody;
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -327,7 +275,7 @@ public class ITSClient extends Service{
 					}else {
 						PublicObjects.changeThisDeviceStatus(3);
 					}
-					mainActivity.tryStartWebsocket();	
+					
 					if(resultStrings.length > 0)
 					{
 						int indexOfNext = response.indexOf(resultStrings[1]);
@@ -340,12 +288,15 @@ public class ITSClient extends Service{
 						mainActivity.ShowInfo("连接成功" + "\n未知错误，无法获取连接数");
 						System.out.println("连接成功" + "\n未知错误，无法获取连接数");
 					}
-					//mainActivity.startHeartBeat();
+					if(!isWebsocketConnected()){
+						mainActivity.tryStartWebsocket();	
+						mainActivity.startHeartBeat();
+					}
 					updateConnectionStatus();
 				}
 				else {
 					mainActivity.ShowInfo("未知错误");
-					System.out.println("未知错误");
+					System.out.println("未知错误, the response is ");
 				}
 			}
 		}.start();
@@ -408,16 +359,9 @@ public class ITSClient extends Service{
 	
 	public void updateConnectionStatus(){
 		if(websocketConnected){ 
-		try {
-				JSONObject requestInfo = new JSONObject();
-				requestInfo.put("type", 1);
-				requestInfo.put("content", PublicObjects.getThisDeviceStatus());
-				wsc.sendTextMessage(requestInfo.toString());
-				System.out.println("updateconnectionstatus successfully, the sent string is " + requestInfo.toString());
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			String sentString = InteractionInfo.formUpdateConnectionStatus();
+			wsc.sendTextMessage(sentString);
+			System.out.println("in update connection status, the sent string is " + sentString);
 		}
 		else{
 			System.out.println("in updateconnectionstatus, the websocket is already closed");
@@ -429,17 +373,9 @@ public class ITSClient extends Service{
 	{
 		if(websocketConnected)
 		{
-			System.out.println("send out heartbeat information");
-			JSONObject requestInfo = new JSONObject();
-			try {
-				requestInfo.put("type", 2);
-				requestInfo.put("content", PublicObjects.getThisDeviceStatus());
-				wsc.sendTextMessage(requestInfo.toString());
+			wsc.sendTextMessage(InteractionInfo.formHearBeat());
+			System.out.println("in itsclient.sendheartbeat, successful send heartbeat");
 
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 		else{
 			System.out.println("the websocket is not established, so the heartbeat is not sent out");
@@ -481,24 +417,14 @@ public class ITSClient extends Service{
                     @Override
                     public void onClose(int code, String reason) {
                             System.out.println("onClose code = " + code + " reason=" + reason);
+                            websocketConnected = false;
                     }
 
                     @Override
                     public void onOpen() {
                     		websocketConnected = true;
                             System.out.println("onOpen");
-                            try {
-        						JSONObject requestInfo = new JSONObject();
-        						requestInfo.put("type", 3);
-        						requestInfo.put("content", JSONObject.NULL);
-        						System.out.println("the send json string is " + requestInfo.toString());
-        						
-        						wsc.sendTextMessage(requestInfo.toString());
-        						
-        					} catch (JSONException e) {
-        						// TODO Auto-generated catch block
-        						e.printStackTrace();
-        					}
+        					wsc.sendTextMessage(InteractionInfo.formGetOtherDevices());
                     }
 
                     @Override
@@ -529,63 +455,27 @@ public class ITSClient extends Service{
 	//change other device's status
 	public void changeOtherDevice(String DeviceID, int newStatus)
 	{
-		 try {
-				JSONObject requestInfo = new JSONObject();
-				requestInfo.put("type", 4);
-				JSONObject deviceInfo = new JSONObject();
-				deviceInfo.put("device_id", DeviceID);
-				deviceInfo.put("status", newStatus);
-				requestInfo.put("content", deviceInfo.toString());
-				System.out.println("in change other device, the sent string is " + requestInfo.toString());
-				wsc.sendTextMessage(requestInfo.toString());
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		System.out.println("in change other devices, the device id is " + DeviceID + " and new status is " + newStatus);
+		String sentString = InteractionInfo.formChangeOtherDevice(DeviceID, newStatus);
+		wsc.sendTextMessage(sentString);
+		System.out.println("in change other devices, the sent string is " + sentString);
 	}
 	
 	public void getOtherDevices(){
-		 try {
-				JSONObject requestInfo = new JSONObject();
-				requestInfo.put("type", 3);
-				requestInfo.put("content", JSONObject.NULL);
-				System.out.println("the send json string is " + requestInfo.toString());
-				
-				wsc.sendTextMessage(requestInfo.toString());
-				
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}	
+		wsc.sendTextMessage(InteractionInfo.formGetOtherDevices());
 	}
 	
 	
 	//change the password
 	public void sendChangePassword(String newPassword)
 	{
-		 try {
-				JSONObject requestInfo = new JSONObject();
-				requestInfo.put("type", 7);
-				requestInfo.put("content", newPassword);
-				wsc.sendTextMessage(requestInfo.toString());
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		wsc.sendTextMessage(InteractionInfo.formSendChangePassword(newPassword));
 	}
 
 	//update the information of other device
 	public void updateOtherDevice()
 	{
-		try {
-			JSONObject requestInfo = new JSONObject();
-			requestInfo.put("type", 6);
-			requestInfo.put("content", JSONObject.NULL);
-			wsc.sendTextMessage(requestInfo.toString());
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		wsc.sendTextMessage(InteractionInfo.formUpdateOtherDevice());
 	}
 
 	//handles all kind of received message
@@ -611,14 +501,14 @@ public class ITSClient extends Service{
 			
 			if(infoType == 3){
 				try {
+					System.out.println("in handlereceived, type 3");
 					String connectionString = jsonObject.getString("content");
-					//JSONObject connectionInfo = new JSONObject(connectionString);
 					if(connectionString.startsWith("\ufeff")){
 						System.out.println("starts with bom");
 						connectionString = connectionString.substring(1);
 					}
 					JSONArray contents = new JSONArray(connectionString);
-					System.out.println("there are " + contents.length() + "more devices");
+					System.out.println("there are " + contents.length() + " more devices");
 
 					for(int i=0; i<contents.length(); i++)
 					{
@@ -628,6 +518,8 @@ public class ITSClient extends Service{
 						PublicObjects.otherDevices[i].ip = ((JSONObject)contents.get(i)).getString("ip");
 						PublicObjects.otherDevices[i].location = ((JSONObject)contents.get(i)).getString("location");
 						PublicObjects.otherDevices[i].owner = ((JSONObject)contents.get(i)).getString("owner");
+						System.out.println("device "+ i + " id is " + PublicObjects.otherDevices[i].device_id);
+						
 					}
 					PublicObjects.otherDeviceNum = contents.length();
 					
@@ -640,6 +532,7 @@ public class ITSClient extends Service{
 			//add new device
 			else if(infoType == 102)
 			{
+				System.out.println("in deal with 102");
 				try {
 					String connectionString = jsonObject.getString("content");
 					JSONObject connectionInfo = new JSONObject(connectionString);
@@ -664,6 +557,8 @@ public class ITSClient extends Service{
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				//System.out.println("after 102 ");
+				//PublicObjects.printOtherDevices();
 				
 			}
 			
@@ -704,14 +599,27 @@ public class ITSClient extends Service{
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}	
+				//System.out.println("after 103");
+				//PublicObjects.printOtherDevices();
 			}
 			
 			//update other device's status
 			else if(infoType == 101)
 			{
+				//System.out.println("before 101");
+				//PublicObjects.printOtherDevices();
 				try {
 					Boolean hasFind = false;
-					JSONObject otherDeviceInfo = jsonObject.getJSONObject("content");
+					
+					String connectionString = jsonObject.getString("content");
+					if(connectionString.startsWith("\ufeff")){
+						System.out.println("starts with bom");
+						connectionString = connectionString.substring(1);
+					}
+					JSONObject otherDeviceInfo = new JSONObject(connectionString);
+					//JSONArray contents = new JSONArray(connectionString);
+					//System.out.println("there are " + contents.length() + " more devices");
+					//JSONObject otherDeviceInfo = jsonObject.getJSONObject("content");
 					String otherDeviceId = otherDeviceInfo.getString("device_id");
 					int otherDeviceStatus = otherDeviceInfo.getInt("status");
 					for(int i=0; i<4; i++)
