@@ -26,6 +26,7 @@ public final class R {
         public static final int iphone=0x7f020002;
     }
     public static final class id {
+        public static final int action_back=0x7f09000e;
         public static final int action_refresh=0x7f09000d;
         public static final int charge=0x7f090002;
         public static final int checkstate=0x7f090007;

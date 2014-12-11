@@ -11,6 +11,10 @@ public class PublicObjects {
 	public static int otherDeviceNum = 0;
 	private static TextView infoStr;
 	public static MainActivity currentMainActivity;
+	public static AllConnections currentAllConnections;
+	private static final int MAIN_ACTIVITY = 1;
+	private static final int ALL_CONNECTIONS_ACTIVITY = 2;
+	private static int currentActivity = MAIN_ACTIVITY;
 
 	private static boolean otherDevicesIsInitiated = false;
 
@@ -18,13 +22,16 @@ public class PublicObjects {
 		
 	}
 	
-	public static void setCurrentMainActivity(MainActivity thisActivity){
-		currentMainActivity = thisActivity;
-		if(!otherDevicesIsInitiated){
-			initiateOtherDevice();
-			otherDevicesIsInitiated = true;
-		}
-		
+	
+	
+	
+	
+	public static void setCurrentActivity(int activityNum){
+		currentActivity = activityNum;
+	}
+	
+	public static int getCurrentActivity(){
+		return currentActivity;
 	}
 	
 	public static void printOtherDevices(){
@@ -40,8 +47,27 @@ public class PublicObjects {
 		}
 	}
 	
+	
+	public static void setCurrentMainActivity(MainActivity thisActivity){
+		currentMainActivity = thisActivity;
+		if(!otherDevicesIsInitiated){
+			initiateOtherDevice();
+			otherDevicesIsInitiated = true;
+		}
+		
+	}
+	
 	public static MainActivity getCurrentMainActivity(){
 		return currentMainActivity;
+	}
+	
+	public static void setCurrentAllconnections(AllConnections thisActivity){
+		currentAllConnections = thisActivity;
+	}
+	
+	
+	public static AllConnections getCurrentAllConnections(){
+		return currentAllConnections;
 	}
 	
 	

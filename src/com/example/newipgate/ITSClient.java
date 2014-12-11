@@ -71,6 +71,7 @@ public class ITSClient extends Service{
 	public void onCreate() {
 		super.onCreate(); 
 		mainActivity = PublicObjects.getCurrentMainActivity();
+		
 		InputStream ins = mainActivity.getResources().openRawResource(R.raw.ca);
 		CertificateFactory cerFactory;
 		try {
@@ -423,6 +424,7 @@ public class ITSClient extends Service{
                     @Override
                     public void onOpen() {
                     		websocketConnected = true;
+                    		mainActivity.setTrytimes(0);
                             System.out.println("onOpen");
         					wsc.sendTextMessage(InteractionInfo.formGetOtherDevices());
                     }
@@ -706,7 +708,22 @@ public class ITSClient extends Service{
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			}	
+			}
+			else if(infoType == 4)
+			{
+				
+				String connectionString;
+				try {
+					connectionString = jsonObject.getString("content");
+					System.out.println("in type 4, the content is " + connectionString);
+					PublicObjects.getCurrentAllConnections().showInfo(connectionString);
+					
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
             
 		}
 	}

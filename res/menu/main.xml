@@ -5,5 +5,10 @@
         android:orderInCategory="100"
         android:showAsAction="ifRoom"
         android:title="refresh"/>
+     <item
+        android:id="@+id/action_back"
+        android:orderInCategory="100"
+        android:showAsAction="ifRoom"
+        android:title="back"/>
 
 </menu>

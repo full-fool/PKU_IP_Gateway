@@ -45,6 +45,7 @@ public class MainActivity extends Activity{
 	private Encrypt encrypt;
 	private TextView infoStr;
 	private ITSClient itsClient;
+	private int tryTimes = 0;
 	private Boolean hasStartedTry = false;
 	//private Interaction interaction;
 
@@ -62,23 +63,33 @@ public class MainActivity extends Activity{
 	Runnable startWebsocket = new Runnable() {
 		
 		public void run() {
-			if(!hasStartedTry && !itsClient.isWebsocketConnected()){
+			if(tryTimes == 0 && !itsClient.isWebsocketConnected()){
+				System.out.println("try ivp6");
 				itsClient.startWebSocket(1);
-				hasStartedTry = true;
-				startWebsocketHandler.postDelayed(startWebsocket, 2000);  
+				//hasStartedTry = true;
+				tryTimes = 1;
+				startWebsocketHandler.postDelayed(startWebsocket, 8000);  
 			}
-			else if(hasStartedTry && !itsClient.isWebsocketConnected()){
+				
+			else if(tryTimes == 1 && !itsClient.isWebsocketConnected()){
+				System.out.println("try ipv4");
 				itsClient.startWebSocket(2);
-				hasStartedTry = true;
+				//hasStartedTry = false;
+				tryTimes = 2;
+				startWebsocketHandler.postDelayed(startWebsocket, 8000);  
 				return;
 			}
-			else{
+			else {
+				tryTimes = 0;
 				return;
 			}
-			
 
 		}
 	};
+	
+	public void setTrytimes(int times){
+		tryTimes = times;
+	}
 	
 	private ServiceConnection mConn = new ServiceConnection()
 
@@ -100,8 +111,9 @@ public class MainActivity extends Activity{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
-		
+		PublicObjects.setCurrentActivity(1);
 		PublicObjects.setCurrentMainActivity(MainActivity.this);
+		
 		System.out.println("mainactivity oncreate");
 		Intent intent = new Intent(this,ITSClient.class);
 		bindService(intent, mConn, Context.BIND_AUTO_CREATE); 
@@ -274,7 +286,10 @@ public class MainActivity extends Activity{
 
 	public void checkAllConnections(View view){
 		if(!itsClient.isWebsocketConnected()){
-			ShowInfo("服务器连接未建立，请稍候再试");
+			ShowInfo("服务器连接暂未建立，请稍候再试");
+			if(tryTimes == 0){
+				tryStartWebsocket();
+			}
 			return;
 		}
 		Intent intent = new Intent(MainActivity.this, AllConnections.class);

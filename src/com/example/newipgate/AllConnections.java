@@ -42,6 +42,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 
 public class AllConnections extends Activity{
@@ -63,7 +64,7 @@ public class AllConnections extends Activity{
 	private ArrayList<HashMap<String, Object>> items=new ArrayList<HashMap<String, Object>>();
 	
 	
-
+	/*
 	Handler refreshHandler = new Handler();
 	Runnable activeRefresh = new Runnable() {
 		
@@ -77,6 +78,8 @@ public class AllConnections extends Activity{
 
 		}
 	};
+	
+	*/
 	
 	
 	private ServiceConnection mConn = new ServiceConnection()
@@ -99,7 +102,10 @@ public class AllConnections extends Activity{
 		setContentView(R.layout.all_connections);
 		Intent intent = new Intent(this,ITSClient.class);
 
+		PublicObjects.setCurrentActivity(2);
+		PublicObjects.setCurrentAllconnections(AllConnections.this);
 		bindService(intent, mConn, Context.BIND_AUTO_CREATE); 
+		
 
 		
 		
@@ -179,7 +185,7 @@ public class AllConnections extends Activity{
 								}	
 							}
 		                    hasRefreshed = false;
-		                    refreshHandler.post(activeRefresh);
+		                    //refreshHandler.post(activeRefresh);
 		                    } 
 		                }). setPositiveButton("取消", new DialogInterface.OnClickListener() { 
 		 		                public void onClick(DialogInterface dialog, int which) { 
@@ -193,14 +199,20 @@ public class AllConnections extends Activity{
 		    
 		    
 	}
-	public void goBack(View view)
+	
+	public void showInfo(String content){
+		Toast.makeText(this, content, Toast.LENGTH_SHORT).show();
+
+	}
+	
+	
+	public void goBack()
 	{
 		Intent intent = new Intent(AllConnections.this, MainActivity.class);
 		startActivity(intent);
 	}
-	
-	private void refresh(){
-		//System.out.println("before refresh");
+	public void refresh(){
+		System.out.println("before refresh");
 		//PublicObjects.printOtherDevices();
 		
 		items.clear();
@@ -239,7 +251,7 @@ public class AllConnections extends Activity{
 			newMap.put("device_id", PublicObjects.otherDevices[i].device_id);
 			//System.out.println("in refresh, the device_id is " + PublicObjects.otherDevices[i].device_id);
 			
-			if(PublicObjects.otherDevices[i].status == DISCONNECTTHIS )
+			if(PublicObjects.otherDevices[i].status == DISCONNECTTHIS || PublicObjects.otherDevices[i].status == DISCONNECTALL)
 			{
 				newMap.put("status", "未连接");
 			}
@@ -260,7 +272,7 @@ public class AllConnections extends Activity{
 				"icon", "status", "device_id"}, new int[] { R.id.icon,R.id.connectionState, R.id.deviceID});
 		
 		lv.setAdapter(adapter);
-		//System.out.println("after refresh");
+		System.out.println("after refresh");
 		//PublicObjects.printOtherDevices();
 	}
 	
@@ -272,8 +284,17 @@ public class AllConnections extends Activity{
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
 		  // Handle presses on the action bar items
-		  refresh();
-		  return true;
+		if(item.getItemId() == R.id.action_refresh){
+			System.out.println("refresh selected");
+			refresh();
+		}
+		else if(item.getItemId() == R.id.action_back){
+			System.out.println("back selected");
+			goBack();
+		}
+		  //return super.onOptionsItemSelected(item);
+  
+		return true;
 		
 	}
 	
