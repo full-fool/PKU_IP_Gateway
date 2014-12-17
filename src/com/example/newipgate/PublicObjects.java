@@ -97,8 +97,8 @@ public class PublicObjects {
 	
 	public static void setThisDeviceStatus(int _status)
 	{
+		System.out.println("this device status is set to " + _status);
 		thisDeviceInfo.status = _status;
-	
 	}
 	
 	public static void setThisDeviceType(int _type)
@@ -115,14 +115,6 @@ public class PublicObjects {
 	{
 		thisDeviceInfo.location = _location;
 	
-	}
-	
-	
-	
-	
-	public static void changeThisDeviceStatus(int newStatus)
-	{
-		thisDeviceInfo.status = newStatus;
 	}
 	
 	public static int getThisDeviceStatus()

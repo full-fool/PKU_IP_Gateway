@@ -3,12 +3,18 @@ package com.example.newipgate;
 
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
 import java.util.Random;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.util.InetAddressUtils;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
@@ -20,14 +26,18 @@ import android.os.IBinder;
 import android.R.integer;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -45,8 +55,8 @@ public class MainActivity extends Activity{
 	private Encrypt encrypt;
 	private TextView infoStr;
 	private ITSClient itsClient;
-	private int tryTimes = 0;
-	private Boolean hasStartedTry = false;
+	private ProgressDialog progressDialog = null;
+	private static boolean isTrying2ConnectServer = false;
 	//private Interaction interaction;
 
 	Handler heartBeatHandler  = new Handler();
@@ -58,7 +68,28 @@ public class MainActivity extends Activity{
 
 		}
 	};
+	
 
+	Handler loginHintHandler  = new Handler();
+	Runnable loginHint = new Runnable() {
+		
+		public void run() {
+			if(!itsClient.isWebsocketConnected()){
+				if(progressDialog != null && progressDialog.isShowing()){
+					progressDialog.dismiss();
+					Toast.makeText(MainActivity.this, "未能连接服务器，请稍候再试", Toast.LENGTH_SHORT).show();
+				}
+				//ShowInfo("未能连接服务器，请稍候再试");
+			}
+			return;
+		}
+	};
+	
+	public static void setIsTrying2ConnectServer(Boolean isTrying){
+		isTrying2ConnectServer = isTrying;
+	}
+
+	/*
 	Handler startWebsocketHandler = new Handler();
 	Runnable startWebsocket = new Runnable() {
 		
@@ -87,9 +118,14 @@ public class MainActivity extends Activity{
 		}
 	};
 	
+	
+	
 	public void setTrytimes(int times){
 		tryTimes = times;
 	}
+	
+	*/
+	
 	
 	private ServiceConnection mConn = new ServiceConnection()
 
@@ -109,32 +145,38 @@ public class MainActivity extends Activity{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.login_page);
+		//setContentView(R.layout.activity_main);
 		
 		PublicObjects.setCurrentActivity(1);
 		PublicObjects.setCurrentMainActivity(MainActivity.this);
+		PublicObjects.setThisDeviceStatus(-1);
+		
+		//check the connection status
+		
 		
 		System.out.println("mainactivity oncreate");
 		Intent intent = new Intent(this,ITSClient.class);
 		bindService(intent, mConn, Context.BIND_AUTO_CREATE); 
 		ITSClient.setMainActivity(MainActivity.this);
-		/*
-		if(!PublicObjects.isSet()){
-			PublicObjects.initiateOtherDevice();
-
-			itsClient = new ITSClient(this);
-			
-			PublicObjects.setItsClient(itsClient);
-		}
-			
-		else{
-			itsClient = PublicObjects.getItsClientwithActivity(this);
-		}
-		*/
+		
+		
+		
+		 try {
+	         ViewConfiguration config = ViewConfiguration.get(this);
+	         Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
+	         if(menuKeyField != null) {
+	             menuKeyField.setAccessible(true);
+	             menuKeyField.setBoolean(config, false);
+	         }
+	     } catch (Exception e) {
+	         e.printStackTrace();
+	     }
+	
 		encrypt = new Encrypt(this);
 		infoStr = (TextView)findViewById(R.id.info);
+		
 
-		//encrypt = new Encrypt(this);
 		SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE); 
 		username = sharedPre.getString("username", "");		
 		String p = sharedPre.getString("password", "");
@@ -145,7 +187,6 @@ public class MainActivity extends Activity{
 		}
 		else {
 			password = encrypt.decrypt(p);
-			//password = "";
 		}
 		//password = p.equals("") ? p : encrypt.decrypt(p);
 		
@@ -156,26 +197,77 @@ public class MainActivity extends Activity{
 		
 	}
 	
+	protected void onResume(){
+		super.onResume();  
+		PublicObjects.setThisDeviceStatus(-1);
+		checkStatus(getCurrentFocus());
+		
+	}		
+
+	
+	public void loginServer(View view){
+		if(PublicObjects.getThisDeviceStatus() == -1){
+			Toast.makeText(MainActivity.this, "暂未获取此设备联网状态，请稍候再试", Toast.LENGTH_SHORT).show();
+			return;
+		}
+		else if(!itsClient.isWebsocketConnected() && !isTrying2ConnectServer){
+			isTrying2ConnectServer = true;
+			progressDialog = ProgressDialog.show(MainActivity.this, "提示", "正在登录……");
+			itsClient.startWebSocket();
+			loginHintHandler.postDelayed(loginHint, 70000);
+			return;	
+		}
+		else if(itsClient.isWebsocketConnected()){
+			changeActivity();
+		}
+		else{
+			return;
+		}
+	}
+	
+	public void changeActivity(){
+		Intent intent = new Intent(MainActivity.this, AllConnections.class);
+		if(progressDialog != null && progressDialog.isShowing()){
+			progressDialog.dismiss();
+		}
+		startActivity(intent);
+		
+	}
 	
 	
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		//getMenuInflater().inflate(R.menu.main, menu);
-		return true;
+		getMenuInflater().inflate(R.menu.mainmenu, menu);
+		return super.onCreateOptionsMenu(menu);
 	}
 	
+	public boolean onOptionsItemSelected(MenuItem item) {
+		  // Handle presses on the action bar items
+		if(item.getItemId() == R.id.save_userinfo){
+			System.out.println("refresh selected");
+			saveUserInfo(getUsername(), getPassword());
+		}
+		  //return super.onOptionsItemSelected(item);
 
+		return true;
+		
+	}
+	
+	/*
 	public void ShowInfo(String content)
 	{
 		//infoStr = (TextView)findViewById(R.id.info);
+
 		final String showContent = content;
 		infoStr.post(new Runnable(){
 			public void run() {
 				infoStr.setText(showContent);
 			}
 		});
+
+		//Toast.makeText(this, content, Toast.LENGTH_SHORT).show();
 	}
-	
+	*/
 
 	
 	public String getUsername(){
@@ -187,27 +279,11 @@ public class MainActivity extends Activity{
 		return 		((EditText)findViewById(R.id.passwd)).getText().toString();
 
 	}
-	
-	public int getIntendedStatus(){
-		charge = (Switch)findViewById(R.id.charge);
-		if(charge.isChecked()){
-			return 4;
-		}
-		else {
-			return 3;
-		}
-		
-	}
-	
+
 	public void startHeartBeat(){
 		heartBeatHandler.post(sendHeartBeat);
 	}
-	
-	
-	public void tryStartWebsocket(){
-		startWebsocketHandler.post(startWebsocket);
-	}
-	
+
 	
 
 	private void saveUserInfo(String u, String p)
@@ -284,6 +360,7 @@ public class MainActivity extends Activity{
 		disconnectThis();
 	}
 
+	/*
 	public void checkAllConnections(View view){
 		if(!itsClient.isWebsocketConnected()){
 			ShowInfo("服务器连接暂未建立，请稍候再试");
@@ -295,15 +372,18 @@ public class MainActivity extends Activity{
 		Intent intent = new Intent(MainActivity.this, AllConnections.class);
 		startActivity(intent);
 	}
+	*/
+	
 	
 	public void changePasswordToServer(View view){
 		if(!itsClient.isWebsocketConnected()){
-			ShowInfo("服务器连接未建立，请稍候再试");
+			//ShowInfo("服务器连接未建立，请稍候再试");
 			return;
 		}
 		itsClient.sendChangePassword(getPassword());
 	}
 	
+	/*
 	public void refresh(View view){
 		if(!itsClient.isWebsocketConnected()){
 			ShowInfo("服务器连接未建立，请稍候再试");
@@ -311,6 +391,10 @@ public class MainActivity extends Activity{
 		}
 		itsClient.updateOtherDevice();
 	}
+	
+	*/
+	
+	
 	
 	public void checkStatus(View view){
 		//itsClient.updateOtherDevice();
@@ -337,7 +421,8 @@ public class MainActivity extends Activity{
 				}
 				//未连接网关
 				if(responseBody.equals("")){
-					ShowInfo("当前连接状态：未连接");
+					//ShowInfo("当前连接状态：未连接");
+					PublicObjects.setThisDeviceStatus(1);
 				}
 				else {
 					getaddr = "http://www.stackoverflow.com";
@@ -353,22 +438,16 @@ public class MainActivity extends Activity{
 						e.printStackTrace();
 					}
 					if(responseBody.equals("")){
-						ShowInfo("当前连接状态：免费网址");
+						//ShowInfo("当前连接状态：免费网址");
+						PublicObjects.setThisDeviceStatus(3);
 					}
 					else{
-						ShowInfo("当前连接状态：收费网址");
+						//ShowInfo("当前连接状态：收费网址");
+						PublicObjects.setThisDeviceStatus(4);
 					}
 					
-				}
-				
-				System.out.println("the disconnect this response is  " + responseBody);
-				
+				}				
 			}
 		}.start();
-
-	
 	}
-
-	
-	
 }

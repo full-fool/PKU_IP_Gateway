@@ -1,0 +1,29 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+      <item
+        android:id="@+id/action_back"
+        android:orderInCategory="100"
+        android:showAsAction="ifRoom"
+        android:title="返回"/>
+    <item
+        android:id="@+id/action_refresh"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="刷新"/>
+    
+     <item
+        android:id="@+id/action_diconnectall"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="断开所有"/>
+     
+      <item
+        android:id="@+id/action_update"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="更新状态"/>
+    
+      
+   
+
+</menu>

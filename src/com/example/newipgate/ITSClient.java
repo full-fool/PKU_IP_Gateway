@@ -3,6 +3,9 @@ package com.example.newipgate;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -15,6 +18,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
@@ -23,6 +27,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -31,6 +36,7 @@ import org.apache.http.client.params.CookiePolicy;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.util.InetAddressUtils;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
@@ -113,10 +119,12 @@ public class ITSClient extends Service{
 		}
 	  }
 	
-	
+
 	public static  void setMainActivity(MainActivity thisActivity){
 		mainActivity = thisActivity;
 	}
+	
+	
 	
 	private int login() {
 		HttpPost post = new HttpPost("http://its.pku.edu.cn/cas/login");
@@ -251,52 +259,52 @@ public class ITSClient extends Service{
 				}
 				String response = cmd(getaddr);
 				if(response.contains("wrong password")){
-					mainActivity.ShowInfo("密码错误");
+					//mainActivity.ShowInfo("密码错误");
 					System.out.println("密码错误");
 				}
 				else if(response.contains("重新输入")) {
-					mainActivity.ShowInfo("重新输入");
+					//mainActivity.ShowInfo("重新输入");
 					System.out.println("重新输入");
 
 				} else if(response.contains("达到设定值")) {
-					mainActivity.ShowInfo("当前连接超过预定值");
+					//mainActivity.ShowInfo("当前连接超过预定值");
 					System.out.println("当前连接超过预定值");
 				} else if(response.contains("不在申请访问服务的范围内")) {
-					mainActivity.ShowInfo("不在申请访问服务的范围内");
+					//mainActivity.ShowInfo("不在申请访问服务的范围内");
 					System.out.println("不在申请访问服务的范围内");
 				} else if(response.contains("ipgw_open_Failed")) {
-					mainActivity.ShowInfo("ipgw_open_Failed");
+					//mainActivity.ShowInfo("ipgw_open_Failed");
 					System.out.println("ipgw_open_Failed");
 				} else if(response.contains("连接成功"))
 				{
 					String [] resultStrings = response.split(">[012]个<", 0);
 					if(ConnectType == 2){
-						PublicObjects.changeThisDeviceStatus(4);
+						PublicObjects.setThisDeviceStatus(4);
 
 					}else {
-						PublicObjects.changeThisDeviceStatus(3);
+						PublicObjects.setThisDeviceStatus(3);
 					}
 					
 					if(resultStrings.length > 0)
 					{
 						int indexOfNext = response.indexOf(resultStrings[1]);
 						final String connectionNum = response.substring(indexOfNext-3, indexOfNext-1);
-						mainActivity.ShowInfo("连接成功" + "\n当前连接：" + connectionNum);
+						//mainActivity.ShowInfo("连接成功" + "\n当前连接：" + connectionNum);
 						System.out.println("连接成功" + "\n当前连接：" + connectionNum);
 					}
 					else 
 					{
-						mainActivity.ShowInfo("连接成功" + "\n未知错误，无法获取连接数");
+						//mainActivity.ShowInfo("连接成功" + "\n未知错误，无法获取连接数");
 						System.out.println("连接成功" + "\n未知错误，无法获取连接数");
 					}
 					if(!isWebsocketConnected()){
-						mainActivity.tryStartWebsocket();	
+						//mainActivity.tryStartWebsocket();	
 						mainActivity.startHeartBeat();
 					}
 					updateConnectionStatus();
 				}
 				else {
-					mainActivity.ShowInfo("未知错误");
+					//mainActivity.ShowInfo("未知错误");
 					System.out.println("未知错误, the response is ");
 				}
 			}
@@ -313,11 +321,11 @@ public class ITSClient extends Service{
 				System.out.println("in disconnect all, the response is " + response);
 				if(response.contains("断开成功") || response.contains("断开全部连接成功")) {
 					PublicObjects.setThisDeviceStatus(2);
-					mainActivity.ShowInfo("断开全部连接成功");
+					//mainActivity.ShowInfo("断开全部连接成功");
 					System.out.println("断开全部连接成功");
 					updateConnectionStatus();
 				}else{
-					mainActivity.ShowInfo("unknown error");					
+					//mainActivity.ShowInfo("unknown error");					
 					System.out.println("unknown error");
 				}
 			}
@@ -337,11 +345,11 @@ public class ITSClient extends Service{
 				System.out.println("in disconnect this, the response is " + response);
 				if(response.contains("断开成功")) {
 					PublicObjects.setThisDeviceStatus(1);
-					mainActivity.ShowInfo("网络断开成功");
+					//mainActivity.ShowInfo("网络断开成功");
 					System.out.println("网络断开成功");
 					updateConnectionStatus();
 				}else{
-					mainActivity.ShowInfo("unknown error");					
+					//mainActivity.ShowInfo("unknown error");					
 					System.out.println("unknown error");
 				}
 			}
@@ -353,6 +361,52 @@ public class ITSClient extends Service{
 	//webSocket part
 	
 
+
+	
+	private String getLocalHostIp()  
+    {  
+        String ipaddress = "";  
+        try  
+        {  
+            Enumeration<NetworkInterface> en = NetworkInterface  
+                    .getNetworkInterfaces();  
+            // 遍历所用的网络接口  
+            while (en.hasMoreElements())  
+            {  
+                NetworkInterface nif = en.nextElement();// 得到每一个网络接口绑定的所有ip  
+                Enumeration<InetAddress> inet = nif.getInetAddresses();  
+                // 遍历每一个接口绑定的所有ip  
+                while (inet.hasMoreElements())  
+                {  
+                    InetAddress ip = inet.nextElement();  
+                    // 在这里如果不加isIPv4Address的判断,直接返回,在4.0上获取到的是类似于fe80::1826:66ff:fe23:48e%p2p0的ipv6的地址  
+                    if (!ip.isLoopbackAddress())  
+                    {  
+                        return ipaddress = "本机的ip是" + "：" + ip.getHostAddress();  
+                    }  
+                }  
+  
+            }  
+        }  
+        catch (SocketException e)  
+        {  
+            Log.e("feige", "获取本地ip地址失败");  
+            e.printStackTrace();  
+        }  
+        return ipaddress;  
+  
+    }
+	
+	private int hasIPv6(){
+		String ipAddress = getLocalHostIp();
+		if(ipAddress.contains(":"))
+			return 1;
+		else if(ipAddress.contains("."))
+			return 0;
+		else 
+			return -1;
+	}
+	
 	
 	public Boolean isWebsocketConnected(){
 		return websocketConnected;
@@ -385,15 +439,15 @@ public class ITSClient extends Service{
 	}
 
 	//initiate the websocket connection
-	public void startWebSocket(int IPtype)
+	public void startWebSocket()
 	{
 		if(!websocketConnected){
 		try {
-			//System.out.println("in start websocket, the status is disconnect");
+			System.out.println("in start websocket, the status is disconnect");
             String url = "";
             String MD5password = "";
-			if(IPtype == 1){
-            	url = "ws://[2001:da8:201:1146:6d69:95e2:9746:1d81]:9000/";
+			if(hasIPv6() == 1){
+            	url = "ws://[2001:da8:201:1146:21a:a0ff:fe9c:89bb]:9000/";
             }
 			else{
 				url = "ws://162.105.146.140:9000/";
@@ -406,8 +460,8 @@ public class ITSClient extends Service{
 				e1.printStackTrace();
 			} 
 			System.out.println("in startwebsocket, the user name is " + mainActivity.getUsername() + " password is " + MD5password +
-					" status " + mainActivity.getIntendedStatus());
-			wsc.connect(url + "login?student_id=" + mainActivity.getUsername() + "&password=" + MD5password + "&type=1&status=" + mainActivity.getIntendedStatus(), 
+					" status " + PublicObjects.getThisDeviceStatus());
+			wsc.connect(url + "login?student_id=" + mainActivity.getUsername() + "&password=" + MD5password + "&type=1&status=" + PublicObjects.getThisDeviceStatus(), 
 					new WebSocketConnectionHandler(){
 
                     @Override
@@ -419,12 +473,13 @@ public class ITSClient extends Service{
                     public void onClose(int code, String reason) {
                             System.out.println("onClose code = " + code + " reason=" + reason);
                             websocketConnected = false;
+                            MainActivity.setIsTrying2ConnectServer(false);
                     }
 
                     @Override
                     public void onOpen() {
                     		websocketConnected = true;
-                    		mainActivity.setTrytimes(0);
+                            MainActivity.setIsTrying2ConnectServer(false);
                             System.out.println("onOpen");
         					wsc.sendTextMessage(InteractionInfo.formGetOtherDevices());
                     }
@@ -477,7 +532,9 @@ public class ITSClient extends Service{
 	//update the information of other device
 	public void updateOtherDevice()
 	{
-		wsc.sendTextMessage(InteractionInfo.formUpdateOtherDevice());
+		String sentString = InteractionInfo.formUpdateOtherDevice();
+		wsc.sendTextMessage(sentString);
+		System.out.println("send string: " + sentString);
 	}
 
 	//handles all kind of received message
@@ -488,6 +545,7 @@ public class ITSClient extends Service{
         {
         	PublicObjects.setThisDeviceDeviceID(payload);
         	PublicObjects.setThisDeviceType(1);
+        	mainActivity.changeActivity();
         }
         else {
         	JSONObject jsonObject = null;
@@ -500,8 +558,18 @@ public class ITSClient extends Service{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} 
-			
-			if(infoType == 3){
+			if(infoType == 1){
+				try {
+					String connectionString = jsonObject.getString("content");
+					if(connectionString.equals("ok") && PublicObjects.getCurrentActivity() == 2){
+						PublicObjects.getCurrentAllConnections().refresh();
+					}
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			else if(infoType == 3){
 				try {
 					System.out.println("in handlereceived, type 3");
 					String connectionString = jsonObject.getString("content");
@@ -552,8 +620,9 @@ public class ITSClient extends Service{
 						PublicObjects.otherDeviceNum++;
 					}
 					
-					
-					
+					if(PublicObjects.getCurrentActivity() == 2){
+						PublicObjects.getCurrentAllConnections().refresh();
+					}						
 					
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
@@ -597,6 +666,9 @@ public class ITSClient extends Service{
 					if(!hasFind)
 						System.out.println("the deleted device not found");
 					}
+					if(PublicObjects.getCurrentActivity() == 2){
+						PublicObjects.getCurrentAllConnections().refresh();
+					}
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -619,9 +691,6 @@ public class ITSClient extends Service{
 						connectionString = connectionString.substring(1);
 					}
 					JSONObject otherDeviceInfo = new JSONObject(connectionString);
-					//JSONArray contents = new JSONArray(connectionString);
-					//System.out.println("there are " + contents.length() + " more devices");
-					//JSONObject otherDeviceInfo = jsonObject.getJSONObject("content");
 					String otherDeviceId = otherDeviceInfo.getString("device_id");
 					int otherDeviceStatus = otherDeviceInfo.getInt("status");
 					for(int i=0; i<4; i++)
@@ -635,6 +704,9 @@ public class ITSClient extends Service{
 					}
 					if(!hasFind)
 						System.out.println("the update other device's status error");
+					if(PublicObjects.getCurrentActivity() == 2){
+						PublicObjects.getCurrentAllConnections().refresh();
+					}
 					
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
@@ -648,7 +720,6 @@ public class ITSClient extends Service{
 				try {
 					int newStatus = jsonObject.getInt("content");
 					//thisDeviceInfo.status = newStatus;
-					PublicObjects.setThisDeviceStatus(newStatus);
 					if(newStatus == 1)
 					{
 						disconnectThis();
@@ -716,7 +787,7 @@ public class ITSClient extends Service{
 				try {
 					connectionString = jsonObject.getString("content");
 					System.out.println("in type 4, the content is " + connectionString);
-					PublicObjects.getCurrentAllConnections().showInfo(connectionString);
+					//PublicObjects.getCurrentAllConnections().showInfo(connectionString);
 					
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block

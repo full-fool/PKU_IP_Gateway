@@ -3,6 +3,7 @@ package com.example.newipgate;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.json.JSONTokener;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -36,9 +38,11 @@ import android.os.IBinder;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -54,6 +58,8 @@ public class AllConnections extends Activity{
 	private final int ANDROID = 1;
 	private final int IPHONE = 2;
 	private boolean hasRefreshed = false;
+	private ProgressDialog progressDialog = null;
+
 
 
 	private Adapter adapter;
@@ -81,6 +87,18 @@ public class AllConnections extends Activity{
 	
 	*/
 	
+	Handler hasStatusChangedHandler = new Handler();
+	Runnable hasStatusChanged = new Runnable() {
+		
+		public void run() {
+			if(progressDialog != null && progressDialog.isShowing()){
+				progressDialog.dismiss();
+				Toast.makeText(AllConnections.this, "更改状态失败，请稍后再试", Toast.LENGTH_SHORT).show();
+			}
+		}
+	};
+	
+	
 	
 	private ServiceConnection mConn = new ServiceConnection()
 
@@ -106,8 +124,16 @@ public class AllConnections extends Activity{
 		PublicObjects.setCurrentAllconnections(AllConnections.this);
 		bindService(intent, mConn, Context.BIND_AUTO_CREATE); 
 		
-
-		
+		 try {
+	         ViewConfiguration config = ViewConfiguration.get(this);
+	         Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
+	         if(menuKeyField != null) {
+	             menuKeyField.setAccessible(true);
+	             menuKeyField.setBoolean(config, false);
+	         }
+	     } catch (Exception e) {
+	         e.printStackTrace();
+	     }
 		
 		refresh();
 		
@@ -148,6 +174,11 @@ public class AllConnections extends Activity{
 		                    public void onClick(DialogInterface dialog, int which) { 
 
 		                    //connect free	
+		                    
+		            		progressDialog = ProgressDialog.show(AllConnections.this, "提示", "请稍候……");
+		    				hasStatusChangedHandler.postDelayed(hasStatusChanged, 5000);  
+
+
 		                    if(selectedOperation == 0)
 		                    {
 		                    	//if the device is itself, execute the method and update status
@@ -212,27 +243,36 @@ public class AllConnections extends Activity{
 		startActivity(intent);
 	}
 	public void refresh(){
-		System.out.println("before refresh");
 		//PublicObjects.printOtherDevices();
-		
+		if(progressDialog != null && progressDialog.isShowing()){
+			progressDialog.dismiss();
+		}
 		items.clear();
 		lv = (ListView) findViewById(R.id.list);
 		
 		HashMap<String, Object> map = new HashMap<String, Object>();
-		map.put("icon", getResources().getDrawable(R.drawable.android));
+		//map.put("icon", getResources().getDrawable(R.drawable.android));
 		map.put("device_id", PublicObjects.thisDeviceInfo.device_id);
-		if(PublicObjects.thisDeviceInfo.status == DISCONNECTTHIS || PublicObjects.thisDeviceInfo.status == DISCONNECTALL)
+		if(PublicObjects.getThisDeviceStatus() == DISCONNECTTHIS || PublicObjects.getThisDeviceStatus() == DISCONNECTALL)
 		{
 			map.put("status", "(本机)未连接");
+			map.put("icon", getResources().getDrawable(R.drawable.androidoff));
+
 		}
-		else if(PublicObjects.thisDeviceInfo.status == FREE) {
+		else if(PublicObjects.getThisDeviceStatus() == FREE) {
 			map.put("status", "(本机)已连接免费地址");
+			map.put("icon", getResources().getDrawable(R.drawable.android));
+
 		}
-		else if(PublicObjects.thisDeviceInfo.status == CHARGE){
+		else if(PublicObjects.getThisDeviceStatus() == CHARGE){
 			map.put("status", "(本机)已连接收费地址");
+			map.put("icon", getResources().getDrawable(R.drawable.android));
+
 		}
 		else{
 			map.put("status", "(本机)状态错误" + PublicObjects.thisDeviceInfo.status);
+			map.put("icon", getResources().getDrawable(R.drawable.androidoff));
+
 		}
 		
 		items.add(map);
@@ -245,7 +285,12 @@ public class AllConnections extends Activity{
 				newMap.put("icon", getResources().getDrawable(R.drawable.iphone));
 			}
 			else {
-				newMap.put("icon", getResources().getDrawable(R.drawable.android));
+				if(PublicObjects.otherDevices[i].status == DISCONNECTTHIS || PublicObjects.otherDevices[i].status == DISCONNECTALL){
+					newMap.put("icon", getResources().getDrawable(R.drawable.androidoff));
+				}
+				else{
+					newMap.put("icon", getResources().getDrawable(R.drawable.android));
+				}
 			}
 			
 			newMap.put("device_id", PublicObjects.otherDevices[i].device_id);
@@ -272,14 +317,13 @@ public class AllConnections extends Activity{
 				"icon", "status", "device_id"}, new int[] { R.id.icon,R.id.connectionState, R.id.deviceID});
 		
 		lv.setAdapter(adapter);
-		System.out.println("after refresh");
-		//PublicObjects.printOtherDevices();
 	}
 	
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
+		getMenuInflater().inflate(R.menu.allconnectionmenu, menu);
+		return super.onCreateOptionsMenu(menu);
+		//return true;
 	}
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -292,6 +336,15 @@ public class AllConnections extends Activity{
 			System.out.println("back selected");
 			goBack();
 		}
+		else if(item.getItemId() == R.id.action_diconnectall){
+			itsClient.disconnectAll();
+		}
+		else if(item.getItemId() == R.id.action_update){
+			itsClient.updateOtherDevice();
+		}
+		
+
+
 		  //return super.onOptionsItemSelected(item);
   
 		return true;
