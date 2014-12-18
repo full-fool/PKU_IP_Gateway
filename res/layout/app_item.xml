@@ -1,29 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="horizontal" 
+	android:orientation="vertical" 
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
-	android:padding="16dp"
 	android:background="@color/itemwhite"
+	android:padding="5dp"
 	>
 	<ImageView android:id="@+id/icon" 
-	    android:layout_width="50dip"
-		android:layout_height="50dip" 
-		android:layout_marginRight="20dp"/>
-	<LinearLayout android:orientation="vertical"
-		android:layout_width="fill_parent" 
-		android:layout_height="wrap_content">
+	    android:layout_width="150dip"
+		android:layout_height="150dip" 
+		android:layout_gravity="center"
+		/>
+	
 	<TextView android:id="@+id/connectionState" 
 		    android:layout_width="fill_parent" 
 		    android:layout_height="wrap_content"
-		    android:textSize="20sp"
-		    android:textColor="#6d6c71"/>
+		    android:textSize="15sp"
+		    android:textColor="#6d6c71"
+		    android:layout_gravity="center"/>
 	<TextView android:id="@+id/deviceID" 
 		    android:layout_width="fill_parent" 
 		    android:layout_height="wrap_content"
 		    android:textSize="10sp"
-		    android:textColor="#6d6c71"/>
-	</LinearLayout>>
+		    android:textColor="#6d6c71"
+		    android:layout_gravity="center"
+		    />
+
 		
 	
 </LinearLayout>

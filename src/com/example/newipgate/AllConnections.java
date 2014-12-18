@@ -41,6 +41,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -50,7 +51,8 @@ import android.widget.Toast;
 
 
 public class AllConnections extends Activity{
-	private ListView lv;
+	//private ListView lv;
+	private GridView gv;
 	private final int CHARGE = 4;
 	private final int FREE = 3;
 	private final int DISCONNECTTHIS = 1;
@@ -58,7 +60,9 @@ public class AllConnections extends Activity{
 	private final int ANDROID = 1;
 	private final int IPHONE = 2;
 	private boolean hasRefreshed = false;
-	private ProgressDialog progressDialog = null;
+	//private ProgressDialog progressDialog = null;
+	private CustomProgressDialog customProgressDialog = null;
+
 
 
 
@@ -91,8 +95,8 @@ public class AllConnections extends Activity{
 	Runnable hasStatusChanged = new Runnable() {
 		
 		public void run() {
-			if(progressDialog != null && progressDialog.isShowing()){
-				progressDialog.dismiss();
+			if(customProgressDialog != null && customProgressDialog.isShowing()){
+				customProgressDialog.dismiss();
 				Toast.makeText(AllConnections.this, "更改状态失败，请稍后再试", Toast.LENGTH_SHORT).show();
 			}
 		}
@@ -138,7 +142,7 @@ public class AllConnections extends Activity{
 		refresh();
 		
 		//things happen after the user click on one of these items 
-		lv.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+		gv.setOnItemClickListener(new AdapterView.OnItemClickListener(){
 			public void onItemClick(AdapterView<?> parent, View view,
 			  int position, long id) {
 				
@@ -149,9 +153,16 @@ public class AllConnections extends Activity{
 				return;
 				
 			}
+			/*
 			 ListView listView = (ListView)parent;
 			 final int selectedPosition = position;  
 			 HashMap<String, Object> map = (HashMap<String, Object>) listView.getItemAtPosition(position);
+			 */
+			
+			 GridView gridView = (GridView)parent;
+			 final int selectedPosition = position;  
+			 HashMap<String, Object> map = (HashMap<String, Object>) gridView.getItemAtPosition(position);
+
 
 			 //device_id只有在连接建立之后才有
 			 final String device_id = map.get("device_id").toString();
@@ -175,7 +186,9 @@ public class AllConnections extends Activity{
 
 		                    //connect free	
 		                    
-		            		progressDialog = ProgressDialog.show(AllConnections.this, "提示", "请稍候……");
+		                    customProgressDialog = CustomProgressDialog.createDialog(AllConnections.this);
+		                    customProgressDialog.setMessage("正在加载中...");
+		                    customProgressDialog.show();
 		    				hasStatusChangedHandler.postDelayed(hasStatusChanged, 5000);  
 
 
@@ -244,12 +257,11 @@ public class AllConnections extends Activity{
 	}
 	public void refresh(){
 		//PublicObjects.printOtherDevices();
-		if(progressDialog != null && progressDialog.isShowing()){
-			progressDialog.dismiss();
+		if(customProgressDialog != null && customProgressDialog.isShowing()){
+			customProgressDialog.dismiss();
 		}
 		items.clear();
-		lv = (ListView) findViewById(R.id.list);
-		
+		//lv = (ListView) findViewById(R.id.list);
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		//map.put("icon", getResources().getDrawable(R.drawable.android));
 		map.put("device_id", PublicObjects.thisDeviceInfo.device_id);
@@ -315,8 +327,9 @@ public class AllConnections extends Activity{
 		
 		adapter = new Adapter(this, items, R.layout.app_item, new String[] {
 				"icon", "status", "device_id"}, new int[] { R.id.icon,R.id.connectionState, R.id.deviceID});
-		
-		lv.setAdapter(adapter);
+		gv = (GridView) findViewById(R.id.gridview);
+		gv.setNumColumns(2);
+		gv.setAdapter(adapter);
 	}
 	
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -328,11 +341,7 @@ public class AllConnections extends Activity{
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
 		  // Handle presses on the action bar items
-		if(item.getItemId() == R.id.action_refresh){
-			System.out.println("refresh selected");
-			refresh();
-		}
-		else if(item.getItemId() == R.id.action_back){
+		if(item.getItemId() == R.id.action_back){
 			System.out.println("back selected");
 			goBack();
 		}

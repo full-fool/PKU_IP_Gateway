@@ -399,6 +399,7 @@ public class ITSClient extends Service{
 	
 	private int hasIPv6(){
 		String ipAddress = getLocalHostIp();
+		System.out.println(ipAddress);
 		if(ipAddress.contains(":"))
 			return 1;
 		else if(ipAddress.contains("."))
@@ -447,7 +448,9 @@ public class ITSClient extends Service{
             String url = "";
             String MD5password = "";
 			if(hasIPv6() == 1){
-            	url = "ws://[2001:da8:201:1146:21a:a0ff:fe9c:89bb]:9000/";
+            	//url = "ws://[2001:da8:201:1146:21a:a0ff:fe9c:89bb]:9000/";
+				url = "ws://162.105.146.140:9000/";
+
             }
 			else{
 				url = "ws://162.105.146.140:9000/";

@@ -55,7 +55,8 @@ public class MainActivity extends Activity{
 	private Encrypt encrypt;
 	private TextView infoStr;
 	private ITSClient itsClient;
-	private ProgressDialog progressDialog = null;
+	//private ProgressDialog progressDialog = null;
+	private CustomProgressDialog customProgressDialog = null;
 	private static boolean isTrying2ConnectServer = false;
 	//private Interaction interaction;
 
@@ -75,8 +76,9 @@ public class MainActivity extends Activity{
 		
 		public void run() {
 			if(!itsClient.isWebsocketConnected()){
-				if(progressDialog != null && progressDialog.isShowing()){
-					progressDialog.dismiss();
+				System.out.println("in login hint");
+				if(customProgressDialog != null && customProgressDialog.isShowing()){
+					customProgressDialog.dismiss();
 					Toast.makeText(MainActivity.this, "未能连接服务器，请稍候再试", Toast.LENGTH_SHORT).show();
 				}
 				//ShowInfo("未能连接服务器，请稍候再试");
@@ -212,9 +214,12 @@ public class MainActivity extends Activity{
 		}
 		else if(!itsClient.isWebsocketConnected() && !isTrying2ConnectServer){
 			isTrying2ConnectServer = true;
-			progressDialog = ProgressDialog.show(MainActivity.this, "提示", "正在登录……");
+			//progressDialog = ProgressDialog.show(MainActivity.this, "提示", "正在登录……");
+			customProgressDialog = CustomProgressDialog.createDialog(this);
+            customProgressDialog.setMessage("正在加载中...");
+            customProgressDialog.show();
 			itsClient.startWebSocket();
-			loginHintHandler.postDelayed(loginHint, 70000);
+			loginHintHandler.postDelayed(loginHint, 7000);
 			return;	
 		}
 		else if(itsClient.isWebsocketConnected()){
@@ -227,8 +232,8 @@ public class MainActivity extends Activity{
 	
 	public void changeActivity(){
 		Intent intent = new Intent(MainActivity.this, AllConnections.class);
-		if(progressDialog != null && progressDialog.isShowing()){
-			progressDialog.dismiss();
+		if(customProgressDialog != null && customProgressDialog.isShowing()){
+			customProgressDialog.dismiss();
 		}
 		startActivity(intent);
 		
