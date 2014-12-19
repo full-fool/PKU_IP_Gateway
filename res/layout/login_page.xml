@@ -2,7 +2,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical" 
-    android:background="@color/bggrey">
+    android:background="@color/itemwhite">
   <ImageView
     android:id="@+id/logo"
     android:layout_width="100dip"
@@ -48,7 +48,7 @@
  	<Button
      android:layout_width="280dip"
      android:layout_height="50dip"
-     android:text="Log in"
+     android:text="登录"
      android:textSize="20sp"
      android:background="@drawable/loginbutton"
      android:layout_gravity="center_horizontal"

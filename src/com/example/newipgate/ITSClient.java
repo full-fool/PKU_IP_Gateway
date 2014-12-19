@@ -382,7 +382,8 @@ public class ITSClient extends Service{
                     // 在这里如果不加isIPv4Address的判断,直接返回,在4.0上获取到的是类似于fe80::1826:66ff:fe23:48e%p2p0的ipv6的地址  
                     if (!ip.isLoopbackAddress())  
                     {  
-                        return ipaddress = "本机的ip是" + "：" + ip.getHostAddress();  
+                        System.out.println("本机ip是 : " + ip.getHostAddress());
+                    	return ipaddress = ip.getHostAddress();  
                     }  
                 }  
   
@@ -400,12 +401,21 @@ public class ITSClient extends Service{
 	private int hasIPv6(){
 		String ipAddress = getLocalHostIp();
 		System.out.println(ipAddress);
-		if(ipAddress.contains(":"))
+		
+		if(ipAddress.contains(":") && !ipAddress.startsWith("fe80")){
+			System.out.println("ipv6 and ip is " + ipAddress);
 			return 1;
-		else if(ipAddress.contains("."))
+		}
+		else if(ipAddress.contains(".")){
+			System.out.println("ipv4");
 			return 0;
-		else 
+		}
+		else {
+			System.out.println("other, ip is " + ipAddress);
+
 			return -1;
+
+		}
 	}
 	
 	
@@ -447,9 +457,11 @@ public class ITSClient extends Service{
 			System.out.println("in start websocket, the status is disconnect");
             String url = "";
             String MD5password = "";
+            //int loginResult = login();
+            
 			if(hasIPv6() == 1){
-            	//url = "ws://[2001:da8:201:1146:21a:a0ff:fe9c:89bb]:9000/";
-				url = "ws://162.105.146.140:9000/";
+            	url = "ws://[2001:da8:201:1146:21a:a0ff:fe9c:89bb]:9000/";
+				//url = "ws://162.105.146.140:9000/";
 
             }
 			else{

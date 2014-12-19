@@ -25,6 +25,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.R.integer;
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
@@ -33,6 +34,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -76,7 +78,7 @@ public class MainActivity extends Activity{
 		
 		public void run() {
 			if(!itsClient.isWebsocketConnected()){
-				System.out.println("in login hint");
+				//System.out.println("in login hint");
 				if(customProgressDialog != null && customProgressDialog.isShowing()){
 					customProgressDialog.dismiss();
 					Toast.makeText(MainActivity.this, "未能连接服务器，请稍候再试", Toast.LENGTH_SHORT).show();
@@ -147,7 +149,14 @@ public class MainActivity extends Activity{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
 		setContentView(R.layout.login_page);
+		
+		final ActionBar bar = getActionBar();
+		Drawable actionBarBGDrawable = getResources().getDrawable(R.drawable.actionbarbg); 
+		bar.setBackgroundDrawable(actionBarBGDrawable);
+		bar.setIcon(R.drawable.logo);
+		bar.setTitle("@PKU");
 		//setContentView(R.layout.activity_main);
 		
 		PublicObjects.setCurrentActivity(1);
@@ -216,7 +225,7 @@ public class MainActivity extends Activity{
 			isTrying2ConnectServer = true;
 			//progressDialog = ProgressDialog.show(MainActivity.this, "提示", "正在登录……");
 			customProgressDialog = CustomProgressDialog.createDialog(this);
-            customProgressDialog.setMessage("正在加载中...");
+            customProgressDialog.setMessage("Loading...");
             customProgressDialog.show();
 			itsClient.startWebSocket();
 			loginHintHandler.postDelayed(loginHint, 7000);
@@ -249,8 +258,12 @@ public class MainActivity extends Activity{
 	public boolean onOptionsItemSelected(MenuItem item) {
 		  // Handle presses on the action bar items
 		if(item.getItemId() == R.id.save_userinfo){
-			System.out.println("refresh selected");
+			System.out.println("save user info selected");
 			saveUserInfo(getUsername(), getPassword());
+		}
+		else if(item.getItemId() == R.id.update_password_toserver){
+			System.out.println("change password to server selected");
+			itsClient.sendChangePassword(getPassword());
 		}
 		  //return super.onOptionsItemSelected(item);
 

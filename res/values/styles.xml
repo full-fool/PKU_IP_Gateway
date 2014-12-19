@@ -15,9 +15,34 @@
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-        
+        <item name="android:windowAnimationStyle">@style/FeelyouWindowAnimTheme</item>   
+        <item name="android:actionBarStyle">@style/CustomActionBar</item>
+        <item name="android:actionMenuTextAppearance">@style/ActionBarMenu</item>
         
     </style>
+    
+    <style name="CustomActionBar" parent="@android:style/Widget.DeviceDefault.ActionBar">
+    	<item name="android:titleTextStyle">@style/ActionBarTitle</item>
+	</style>
+
+	<style name="ActionBarTitle" parent="@android:style/TextAppearance.Holo.Large">
+    	<item name="android:textColor">@color/bggrey</item>
+    	<item name="android:textSize">20sp</item>
+	</style>
+	
+	<style name="ActionBarMenu" parent="@android:style/TextAppearance.Holo.Large">
+    	<item name="android:textColor">@color/bggrey</item>
+    	<item name="android:textSize">20sp</item>
+	</style>
+    
+
+	
+    <style name="FeelyouWindowAnimTheme" parent="@android:style/Animation.Activity">
+    	<item name="android:activityOpenEnterAnimation">@anim/in_from_top</item>
+    	<item name="android:activityOpenExitAnimation">@anim/out_from_bottom</item>
+    	<item name="android:activityCloseEnterAnimation">@anim/in_from_bottom</item>
+    	<item name="android:activityCloseExitAnimation">@anim/out_from_top</item>
+	</style>
     
     <style name="CustomDialog" parent="@android:style/Theme.Dialog"> 
     	<item name="android:windowFrame">@null</item> 

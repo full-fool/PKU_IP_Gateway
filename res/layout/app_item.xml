@@ -2,8 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" 
 	android:layout_width="fill_parent"
-	android:layout_height="wrap_content"
-	android:background="@color/itemwhite"
+	android:layout_height="220dp"
+	android:background="@drawable/gridviewitem"
 	android:padding="5dp"
 	>
 	<ImageView android:id="@+id/icon" 
@@ -15,15 +15,17 @@
 	<TextView android:id="@+id/connectionState" 
 		    android:layout_width="fill_parent" 
 		    android:layout_height="wrap_content"
-		    android:textSize="15sp"
+		    android:textSize="14sp"
 		    android:textColor="#6d6c71"
-		    android:layout_gravity="center"/>
+		    android:gravity="center"
+			android:layout_marginTop="10dp"
+		    />
 	<TextView android:id="@+id/deviceID" 
 		    android:layout_width="fill_parent" 
 		    android:layout_height="wrap_content"
 		    android:textSize="10sp"
 		    android:textColor="#6d6c71"
-		    android:layout_gravity="center"
+		    android:gravity="center"
 		    />
 
 		

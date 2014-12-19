@@ -21,7 +21,8 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name="com.example.newipgate.MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -30,7 +31,8 @@
         </activity>
          <activity
         android:name="com.example.newipgate.AllConnections"
-        android:label="allConnections">
+        android:label="allConnections"
+        android:theme="@style/AppTheme">
            
     	</activity>
     <service android:enabled="true" android:name="com.example.newipgate.ITSClient" />

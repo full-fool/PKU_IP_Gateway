@@ -19,6 +19,7 @@ import org.json.JSONTokener;
 
 
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -60,6 +61,7 @@ public class AllConnections extends Activity{
 	private final int ANDROID = 1;
 	private final int IPHONE = 2;
 	private boolean hasRefreshed = false;
+	private boolean isBusy = false;
 	//private ProgressDialog progressDialog = null;
 	private CustomProgressDialog customProgressDialog = null;
 
@@ -122,6 +124,13 @@ public class AllConnections extends Activity{
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.all_connections);
+		
+		
+		final ActionBar bar = getActionBar();
+		Drawable actionBarBGDrawable = getResources().getDrawable(R.drawable.actionbarbg); 
+		bar.setBackgroundDrawable(actionBarBGDrawable);
+		bar.setIcon(R.drawable.logo);
+		bar.setTitle("@PKU");
 		Intent intent = new Intent(this,ITSClient.class);
 
 		PublicObjects.setCurrentActivity(2);
@@ -170,7 +179,7 @@ public class AllConnections extends Activity{
 			 final String[] arrayFruit = new String[] { "连接免费网址", "连接收费网址", "断开连接"}; 
 		        Dialog alertDialog = new AlertDialog.Builder(AllConnections.this). 
 		                setTitle("请选择将要执行的操作"). 
-		                setIcon(R.drawable.ic_launcher) 
+		                setIcon(R.drawable.logo) 
 		                .setSingleChoiceItems(arrayFruit, 0, new DialogInterface.OnClickListener() { 
 		  
 		                    @Override 
@@ -187,7 +196,7 @@ public class AllConnections extends Activity{
 		                    //connect free	
 		                    
 		                    customProgressDialog = CustomProgressDialog.createDialog(AllConnections.this);
-		                    customProgressDialog.setMessage("正在加载中...");
+		                    customProgressDialog.setMessage("loading...");
 		                    customProgressDialog.show();
 		    				hasStatusChangedHandler.postDelayed(hasStatusChanged, 5000);  
 
@@ -341,11 +350,7 @@ public class AllConnections extends Activity{
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
 		  // Handle presses on the action bar items
-		if(item.getItemId() == R.id.action_back){
-			System.out.println("back selected");
-			goBack();
-		}
-		else if(item.getItemId() == R.id.action_diconnectall){
+		if(item.getItemId() == R.id.action_diconnectall){
 			itsClient.disconnectAll();
 		}
 		else if(item.getItemId() == R.id.action_update){
