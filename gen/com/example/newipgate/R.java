@@ -18,9 +18,11 @@ public final class R {
     public static final class attr {
     }
     public static final class color {
+        public static final int bggreen=0x7f060005;
         public static final int bggrey=0x7f060000;
         public static final int bgred=0x7f060001;
         public static final int itemwhite=0x7f060002;
+        public static final int pkured=0x7f060004;
         public static final int textgrey=0x7f060003;
     }
     public static final class dimen {
@@ -63,6 +65,7 @@ public final class R {
     public static final class id {
         public static final int action_diconnectall=0x7f0b0010;
         public static final int action_update=0x7f0b0011;
+        public static final int change_user=0x7f0b0012;
         public static final int charge=0x7f0b0002;
         public static final int checkstate=0x7f0b0007;
         public static final int connect=0x7f0b0004;
@@ -78,8 +81,8 @@ public final class R {
         public static final int logo=0x7f0b000f;
         public static final int passwd=0x7f0b0001;
         public static final int remember=0x7f0b0003;
-        public static final int save_userinfo=0x7f0b0012;
-        public static final int update_password_toserver=0x7f0b0013;
+        public static final int save_userinfo=0x7f0b0013;
+        public static final int update_password_toserver=0x7f0b0014;
         public static final int usname=0x7f0b0000;
     }
     public static final class layout {
@@ -88,6 +91,7 @@ public final class R {
         public static final int app_item=0x7f030002;
         public static final int customprogressdialog=0x7f030003;
         public static final int login_page=0x7f030004;
+        public static final int welcome_page=0x7f030005;
     }
     public static final class menu {
         public static final int allconnectionmenu=0x7f0a0000;

@@ -68,7 +68,7 @@ public class ITSClient extends Service{
 	
 	private DefaultHttpClient client;
 
-	private static MainActivity mainActivity;
+	private static LoginActivity mainActivity;
 	
 	private final WebSocketConnection wsc = new WebSocketConnection();
 	
@@ -120,7 +120,7 @@ public class ITSClient extends Service{
 	  }
 	
 
-	public static  void setMainActivity(MainActivity thisActivity){
+	public static  void setMainActivity(LoginActivity thisActivity){
 		mainActivity = thisActivity;
 	}
 	
@@ -460,7 +460,7 @@ public class ITSClient extends Service{
             //int loginResult = login();
             
 			if(hasIPv6() == 1){
-            	url = "ws://[2001:da8:201:1146:21a:a0ff:fe9c:89bb]:9000/";
+            	url = "ws://[2001:da8:201:1146:14e9:c2ad:1e65:7963]:9000/";
 				//url = "ws://162.105.146.140:9000/";
 
             }
@@ -488,13 +488,13 @@ public class ITSClient extends Service{
                     public void onClose(int code, String reason) {
                             System.out.println("onClose code = " + code + " reason=" + reason);
                             websocketConnected = false;
-                            MainActivity.setIsTrying2ConnectServer(false);
+                            LoginActivity.setIsTrying2ConnectServer(false);
                     }
 
                     @Override
                     public void onOpen() {
                     		websocketConnected = true;
-                            MainActivity.setIsTrying2ConnectServer(false);
+                            LoginActivity.setIsTrying2ConnectServer(false);
                             System.out.println("onOpen");
         					wsc.sendTextMessage(InteractionInfo.formGetOtherDevices());
                     }

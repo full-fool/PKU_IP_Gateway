@@ -46,7 +46,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 @SuppressLint("CommitPrefEdits")
-public class MainActivity extends Activity{
+public class LoginActivity extends Activity{
 
 	
 	private String username;
@@ -57,10 +57,13 @@ public class MainActivity extends Activity{
 	private Encrypt encrypt;
 	private TextView infoStr;
 	private ITSClient itsClient;
+	private Boolean hasbind = false;
 	//private ProgressDialog progressDialog = null;
 	private CustomProgressDialog customProgressDialog = null;
+	private static boolean changeUser = false;
 	private static boolean isTrying2ConnectServer = false;
 	//private Interaction interaction;
+	
 
 	Handler heartBeatHandler  = new Handler();
 	Runnable sendHeartBeat = new Runnable() {
@@ -72,6 +75,24 @@ public class MainActivity extends Activity{
 		}
 	};
 	
+	
+
+	Handler AutoLoginHandler  = new Handler();
+	Runnable AutoLogin = new Runnable() {
+		
+		public void run() {
+			if(hasbind){
+				loginServer(getCurrentFocus());
+				return;
+			}
+			else{
+				AutoLoginHandler.postDelayed(AutoLogin, 10);  
+			}
+
+		}
+	};
+	
+	
 
 	Handler loginHintHandler  = new Handler();
 	Runnable loginHint = new Runnable() {
@@ -81,7 +102,7 @@ public class MainActivity extends Activity{
 				//System.out.println("in login hint");
 				if(customProgressDialog != null && customProgressDialog.isShowing()){
 					customProgressDialog.dismiss();
-					Toast.makeText(MainActivity.this, "未能连接服务器，请稍候再试", Toast.LENGTH_SHORT).show();
+					Toast.makeText(LoginActivity.this, "未能连接服务器，请稍候再试", Toast.LENGTH_SHORT).show();
 				}
 				//ShowInfo("未能连接服务器，请稍候再试");
 			}
@@ -92,64 +113,36 @@ public class MainActivity extends Activity{
 	public static void setIsTrying2ConnectServer(Boolean isTrying){
 		isTrying2ConnectServer = isTrying;
 	}
-
-	/*
-	Handler startWebsocketHandler = new Handler();
-	Runnable startWebsocket = new Runnable() {
-		
-		public void run() {
-			if(tryTimes == 0 && !itsClient.isWebsocketConnected()){
-				System.out.println("try ivp6");
-				itsClient.startWebSocket(1);
-				//hasStartedTry = true;
-				tryTimes = 1;
-				startWebsocketHandler.postDelayed(startWebsocket, 8000);  
-			}
-				
-			else if(tryTimes == 1 && !itsClient.isWebsocketConnected()){
-				System.out.println("try ipv4");
-				itsClient.startWebSocket(2);
-				//hasStartedTry = false;
-				tryTimes = 2;
-				startWebsocketHandler.postDelayed(startWebsocket, 8000);  
-				return;
-			}
-			else {
-				tryTimes = 0;
-				return;
-			}
-
-		}
-	};
 	
-	
-	
-	public void setTrytimes(int times){
-		tryTimes = times;
+	public static void setChangeUser(){
+		changeUser = true;
 	}
 	
-	*/
-	
+	public static boolean getChangeUser(){
+		return changeUser;
+	}
 	
 	private ServiceConnection mConn = new ServiceConnection()
 
 	{
 				public void onServiceConnected(ComponentName name,
 						IBinder service) {
+					
 					itsClient=((ITSClient.MyBinder)service).getService();
+					hasbind = true;
 					
 				}
 				@Override
 				public void onServiceDisconnected(ComponentName name) {
-					itsClient = null;					
+					itsClient = null;
+					hasbind = false;
 				}  
 	};
 	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		
+		super.onCreate(savedInstanceState);		
 		setContentView(R.layout.login_page);
 		
 		final ActionBar bar = getActionBar();
@@ -160,7 +153,7 @@ public class MainActivity extends Activity{
 		//setContentView(R.layout.activity_main);
 		
 		PublicObjects.setCurrentActivity(1);
-		PublicObjects.setCurrentMainActivity(MainActivity.this);
+		PublicObjects.setCurrentMainActivity(LoginActivity.this);
 		PublicObjects.setThisDeviceStatus(-1);
 		
 		//check the connection status
@@ -169,7 +162,7 @@ public class MainActivity extends Activity{
 		System.out.println("mainactivity oncreate");
 		Intent intent = new Intent(this,ITSClient.class);
 		bindService(intent, mConn, Context.BIND_AUTO_CREATE); 
-		ITSClient.setMainActivity(MainActivity.this);
+		ITSClient.setMainActivity(LoginActivity.this);
 		
 		
 		
@@ -185,9 +178,7 @@ public class MainActivity extends Activity{
 	     }
 	
 		encrypt = new Encrypt(this);
-		infoStr = (TextView)findViewById(R.id.info);
-		
-
+		//infoStr = (TextView)findViewById(R.id.info);
 		SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE); 
 		username = sharedPre.getString("username", "");		
 		String p = sharedPre.getString("password", "");
@@ -199,26 +190,34 @@ public class MainActivity extends Activity{
 		else {
 			password = encrypt.decrypt(p);
 		}
-		//password = p.equals("") ? p : encrypt.decrypt(p);
-		
 		System.out.println("The stored username is " + username + " and the password is " + password);
 		((EditText)findViewById(R.id.usname)).setText(username);
 		((EditText)findViewById(R.id.passwd)).setText(password);
 		
 		
+		if(username != null && !username.equals("") && p != null && !p.equals("") && !changeUser)
+		{
+			PublicObjects.setThisDeviceStatus(5);
+			//checkStatus();
+			//loginServer(getCurrentFocus());
+			AutoLoginHandler.post(AutoLogin);
+		}
+
+	
+		
 	}
 	
 	protected void onResume(){
 		super.onResume();  
-		PublicObjects.setThisDeviceStatus(-1);
-		checkStatus(getCurrentFocus());
+		PublicObjects.setThisDeviceStatus(5);
+		checkStatus();
 		
 	}		
 
 	
 	public void loginServer(View view){
 		if(PublicObjects.getThisDeviceStatus() == -1){
-			Toast.makeText(MainActivity.this, "暂未获取此设备联网状态，请稍候再试", Toast.LENGTH_SHORT).show();
+			Toast.makeText(LoginActivity.this, "暂未获取此设备联网状态，请稍候再试", Toast.LENGTH_SHORT).show();
 			return;
 		}
 		else if(!itsClient.isWebsocketConnected() && !isTrying2ConnectServer){
@@ -226,6 +225,7 @@ public class MainActivity extends Activity{
 			//progressDialog = ProgressDialog.show(MainActivity.this, "提示", "正在登录……");
 			customProgressDialog = CustomProgressDialog.createDialog(this);
             customProgressDialog.setMessage("Loading...");
+            customProgressDialog.setCancelable(false);
             customProgressDialog.show();
 			itsClient.startWebSocket();
 			loginHintHandler.postDelayed(loginHint, 7000);
@@ -240,11 +240,14 @@ public class MainActivity extends Activity{
 	}
 	
 	public void changeActivity(){
-		Intent intent = new Intent(MainActivity.this, AllConnections.class);
+		Intent intent = new Intent(LoginActivity.this, AllConnections.class);
 		if(customProgressDialog != null && customProgressDialog.isShowing()){
 			customProgressDialog.dismiss();
 		}
+		//用来处理连接路由器时一台设备断开了，另外的设备都会断开。
+		itsClient.updateConnectionStatus();
 		startActivity(intent);
+		
 		
 	}
 	
@@ -414,7 +417,7 @@ public class MainActivity extends Activity{
 	
 	
 	
-	public void checkStatus(View view){
+	public void checkStatus(){
 		//itsClient.updateOtherDevice();
 		new Thread() {
 			public void run() {

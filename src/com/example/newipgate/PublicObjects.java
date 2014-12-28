@@ -10,7 +10,7 @@ public class PublicObjects {
 	public static DeviceInfo[] otherDevices = new DeviceInfo[4];
 	public static int otherDeviceNum = 0;
 	private static TextView infoStr;
-	public static MainActivity currentMainActivity;
+	public static LoginActivity currentMainActivity;
 	public static AllConnections currentAllConnections;
 	private static final int MAIN_ACTIVITY = 1;
 	private static final int ALL_CONNECTIONS_ACTIVITY = 2;
@@ -48,7 +48,7 @@ public class PublicObjects {
 	}
 	
 	
-	public static void setCurrentMainActivity(MainActivity thisActivity){
+	public static void setCurrentMainActivity(LoginActivity thisActivity){
 		currentMainActivity = thisActivity;
 		if(!otherDevicesIsInitiated){
 			initiateOtherDevice();
@@ -57,7 +57,7 @@ public class PublicObjects {
 		
 	}
 	
-	public static MainActivity getCurrentMainActivity(){
+	public static LoginActivity getCurrentMainActivity(){
 		return currentMainActivity;
 	}
 	

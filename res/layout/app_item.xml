@@ -16,7 +16,7 @@
 		    android:layout_width="fill_parent" 
 		    android:layout_height="wrap_content"
 		    android:textSize="14sp"
-		    android:textColor="#6d6c71"
+		    android:textColor="#e3e3e3"
 		    android:gravity="center"
 			android:layout_marginTop="10dp"
 		    />
@@ -24,7 +24,7 @@
 		    android:layout_width="fill_parent" 
 		    android:layout_height="wrap_content"
 		    android:textSize="10sp"
-		    android:textColor="#6d6c71"
+		    android:textColor="#e3e3e3"
 		    android:gravity="center"
 		    />
 

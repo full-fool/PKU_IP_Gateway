@@ -179,7 +179,7 @@ public class AllConnections extends Activity{
 			 final String[] arrayFruit = new String[] { "连接免费网址", "连接收费网址", "断开连接"}; 
 		        Dialog alertDialog = new AlertDialog.Builder(AllConnections.this). 
 		                setTitle("请选择将要执行的操作"). 
-		                setIcon(R.drawable.logo) 
+		                setIcon(R.drawable.ic_launcher) 
 		                .setSingleChoiceItems(arrayFruit, 0, new DialogInterface.OnClickListener() { 
 		  
 		                    @Override 
@@ -197,6 +197,7 @@ public class AllConnections extends Activity{
 		                    
 		                    customProgressDialog = CustomProgressDialog.createDialog(AllConnections.this);
 		                    customProgressDialog.setMessage("loading...");
+		                    customProgressDialog.setCancelable(false);
 		                    customProgressDialog.show();
 		    				hasStatusChangedHandler.postDelayed(hasStatusChanged, 5000);  
 
@@ -261,7 +262,7 @@ public class AllConnections extends Activity{
 	
 	public void goBack()
 	{
-		Intent intent = new Intent(AllConnections.this, MainActivity.class);
+		Intent intent = new Intent(AllConnections.this, LoginActivity.class);
 		startActivity(intent);
 	}
 	public void refresh(){
@@ -356,9 +357,13 @@ public class AllConnections extends Activity{
 		else if(item.getItemId() == R.id.action_update){
 			itsClient.updateOtherDevice();
 		}
+		else if(item.getItemId() == R.id.change_user){
+			LoginActivity.setChangeUser();
+			Intent intent = new Intent(AllConnections.this, LoginActivity.class);
+			startActivity(intent);
+			
+		}
 		
-
-
 		  //return super.onOptionsItemSelected(item);
   
 		return true;

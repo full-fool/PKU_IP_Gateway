@@ -4,6 +4,8 @@
     <color name="bgred">#ffb3b3</color>  
     <color name="itemwhite">#fdfcea</color> 
     <color name="textgrey">#a5b2c8</color>  
+    <color name="pkured">#c0000b</color>
+    <color name="bggreen">#f3f2ec</color>
     
     
 </resources>
