@@ -36,6 +36,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -83,6 +84,7 @@ public class LoginActivity extends Activity{
 		public void run() {
 			if(hasbind){
 				loginServer(getCurrentFocus());
+				//Finish();
 				return;
 			}
 			else{
@@ -91,7 +93,6 @@ public class LoginActivity extends Activity{
 
 		}
 	};
-	
 	
 
 	Handler loginHintHandler  = new Handler();
@@ -209,10 +210,25 @@ public class LoginActivity extends Activity{
 	
 	protected void onResume(){
 		super.onResume();  
-		PublicObjects.setThisDeviceStatus(5);
-		checkStatus();
+		//PublicObjects.setThisDeviceStatus(5);
+		//checkStatus();
 		
-	}		
+	}	
+	
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+	    if (keyCode == KeyEvent.KEYCODE_BACK) {
+	        moveTaskToBack(true);
+	        return true;
+	    }
+	    return super.onKeyDown(keyCode, event);
+	}
+	
+	 protected void onDestroy() {  
+	        unbindService(mConn);  
+	        System.out.println("loginactivity destroyed");
+	        super.onDestroy();  
+	    }  
+	  
 
 	
 	public void loginServer(View view){
@@ -266,6 +282,7 @@ public class LoginActivity extends Activity{
 		}
 		else if(item.getItemId() == R.id.update_password_toserver){
 			System.out.println("change password to server selected");
+			saveUserInfo(getUsername(), getPassword());
 			itsClient.sendChangePassword(getPassword());
 		}
 		  //return super.onOptionsItemSelected(item);
@@ -417,58 +434,5 @@ public class LoginActivity extends Activity{
 	
 	
 	
-	public void checkStatus(){
-		//itsClient.updateOtherDevice();
-		new Thread() {
-			public void run() {
-				 final int REQUEST_TIMEOUT = 2*1000;
-				 final int SO_TIMEOUT = 2*1000; 
-				String getaddr = "http://www.baidu.com";
-				HttpGet get = new HttpGet(getaddr);
-				BasicHttpParams httpParams = new BasicHttpParams();  
-			    HttpConnectionParams.setConnectionTimeout(httpParams, REQUEST_TIMEOUT);  
-			    HttpConnectionParams.setSoTimeout(httpParams, SO_TIMEOUT);  
-			    HttpClient client = new DefaultHttpClient(httpParams);  
-				ResponseHandler<String> responseHandler = new BasicResponseHandler();
-				String responseBody = "";
-				try {
-					responseBody = client.execute(get, responseHandler);
-				} catch (ClientProtocolException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				//未连接网关
-				if(responseBody.equals("")){
-					//ShowInfo("当前连接状态：未连接");
-					PublicObjects.setThisDeviceStatus(1);
-				}
-				else {
-					getaddr = "http://www.stackoverflow.com";
-					HttpGet get2 = new HttpGet(getaddr);
-					responseBody = "";
-					try {
-						responseBody = client.execute(get2, responseHandler);
-					} catch (ClientProtocolException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					if(responseBody.equals("")){
-						//ShowInfo("当前连接状态：免费网址");
-						PublicObjects.setThisDeviceStatus(3);
-					}
-					else{
-						//ShowInfo("当前连接状态：收费网址");
-						PublicObjects.setThisDeviceStatus(4);
-					}
-					
-				}				
-			}
-		}.start();
-	}
+	
 }

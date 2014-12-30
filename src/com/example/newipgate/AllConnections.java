@@ -1,6 +1,7 @@
 package com.example.newipgate;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
@@ -10,9 +11,14 @@ import java.util.List;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -36,6 +42,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -105,6 +112,17 @@ public class AllConnections extends Activity{
 	};
 	
 	
+	final private Handler refreshHandler = new Handler(){
+	    public void handleMessage(Message msg) {
+	        switch (msg.what) {
+	        case 0 :
+	        	refresh();
+	            break;
+	        default :
+	            break;
+	        }
+	    }
+	};
 	
 	private ServiceConnection mConn = new ServiceConnection()
 
@@ -254,6 +272,22 @@ public class AllConnections extends Activity{
 		    
 	}
 	
+	
+	protected void onResume(){
+		super.onResume();  
+		//PublicObjects.setThisDeviceStatus(5);
+		checkStatus();
+		
+	}		
+	
+	
+	 protected void onDestroy() {  
+	        unbindService(mConn);  
+	        System.out.println("allconnections destroyed");
+	        super.onDestroy();  
+	    }  
+	  
+	
 	public void showInfo(String content){
 		Toast.makeText(this, content, Toast.LENGTH_SHORT).show();
 
@@ -291,6 +325,11 @@ public class AllConnections extends Activity{
 			map.put("icon", getResources().getDrawable(R.drawable.android));
 
 		}
+		else if(PublicObjects.getThisDeviceStatus() == 5){
+			map.put("status", "(本机)暂未获取状态");
+			map.put("icon", getResources().getDrawable(R.drawable.androidoff));
+
+		}
 		else{
 			map.put("status", "(本机)状态错误" + PublicObjects.thisDeviceInfo.status);
 			map.put("icon", getResources().getDrawable(R.drawable.androidoff));
@@ -307,7 +346,8 @@ public class AllConnections extends Activity{
 				newMap.put("icon", getResources().getDrawable(R.drawable.iphone));
 			}
 			else {
-				if(PublicObjects.otherDevices[i].status == DISCONNECTTHIS || PublicObjects.otherDevices[i].status == DISCONNECTALL){
+				if(PublicObjects.otherDevices[i].status == DISCONNECTTHIS || PublicObjects.otherDevices[i].status == DISCONNECTALL
+						|| PublicObjects.otherDevices[i].status == 5){
 					newMap.put("icon", getResources().getDrawable(R.drawable.androidoff));
 				}
 				else{
@@ -328,6 +368,9 @@ public class AllConnections extends Activity{
 			else if(PublicObjects.otherDevices[i].status == CHARGE){
 				newMap.put("status", "已连接收费地址");
 			}
+			else if(PublicObjects.otherDevices[i].status == 5){
+				newMap.put("status", "暂未获取状态");
+			}
 			else{
 				newMap.put("status", "状态错误" + PublicObjects.otherDevices[i].status);
 			}
@@ -340,6 +383,71 @@ public class AllConnections extends Activity{
 		gv = (GridView) findViewById(R.id.gridview);
 		gv.setNumColumns(2);
 		gv.setAdapter(adapter);
+	}
+	
+	
+	public void checkStatus(){
+		//itsClient.updateOtherDevice();
+		System.out.println("check status called");
+		new Thread() {
+			public void run() {
+				 final int REQUEST_TIMEOUT = 2*1000;
+				 final int SO_TIMEOUT = 2*1000; 
+				String getaddr = "http://www.baidu.com";
+				HttpGet get = new HttpGet(getaddr);
+				BasicHttpParams httpParams = new BasicHttpParams();  
+			    HttpConnectionParams.setConnectionTimeout(httpParams, REQUEST_TIMEOUT);  
+			    HttpConnectionParams.setSoTimeout(httpParams, SO_TIMEOUT);  
+			    HttpClient client = new DefaultHttpClient(httpParams);  
+				ResponseHandler<String> responseHandler = new BasicResponseHandler();
+				String responseBody = "";
+				try {
+					responseBody = client.execute(get, responseHandler);
+				} catch (ClientProtocolException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				//未连接网关
+				if(responseBody.equals("")){
+					//ShowInfo("当前连接状态：未连接");
+					PublicObjects.setThisDeviceStatus(1);
+					itsClient.updateConnectionStatus();
+					refreshHandler.sendEmptyMessage(0);
+				}
+				else {
+					getaddr = "http://www.stackoverflow.com";
+					HttpGet get2 = new HttpGet(getaddr);
+					responseBody = "";
+					try {
+						responseBody = client.execute(get2, responseHandler);
+					} catch (ClientProtocolException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					if(responseBody.equals("")){
+						//ShowInfo("当前连接状态：免费网址");
+						PublicObjects.setThisDeviceStatus(3);
+						itsClient.updateConnectionStatus();
+						refreshHandler.sendEmptyMessage(0);
+					}
+					else{
+						//ShowInfo("当前连接状态：收费网址");
+						PublicObjects.setThisDeviceStatus(4);
+						itsClient.updateConnectionStatus();
+						refreshHandler.sendEmptyMessage(0);
+					}
+					
+				}
+				
+			}
+		}.start();
+
 	}
 	
 	public boolean onCreateOptionsMenu(Menu menu) {

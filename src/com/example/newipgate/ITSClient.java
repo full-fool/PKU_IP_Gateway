@@ -119,7 +119,11 @@ public class ITSClient extends Service{
 		}
 	  }
 	
-
+	   public void onDestroy() {
+	        // Cancel the persistent notification.
+		   System.out.println("<----------------ITSClient Service is destroyed!------------->");
+	        // Tell the user we stopped.
+	    }
 	public static  void setMainActivity(LoginActivity thisActivity){
 		mainActivity = thisActivity;
 	}
@@ -460,7 +464,7 @@ public class ITSClient extends Service{
             //int loginResult = login();
             
 			if(hasIPv6() == 1){
-            	url = "ws://[2001:da8:201:1146:14e9:c2ad:1e65:7963]:9000/";
+            	url = "ws://[2001:da8:201:1146:d5e0:2f0f:7443:cb91]:9000/";
 				//url = "ws://162.105.146.140:9000/";
 
             }
@@ -487,12 +491,14 @@ public class ITSClient extends Service{
                     @Override
                     public void onClose(int code, String reason) {
                             System.out.println("onClose code = " + code + " reason=" + reason);
+                            System.out.println("the websocketConnected is set to false");
                             websocketConnected = false;
                             LoginActivity.setIsTrying2ConnectServer(false);
                     }
 
                     @Override
                     public void onOpen() {
+                    		System.out.println("the websocketConnected is set to true");
                     		websocketConnected = true;
                             LoginActivity.setIsTrying2ConnectServer(false);
                             System.out.println("onOpen");
@@ -713,6 +719,9 @@ public class ITSClient extends Service{
 						if(otherDeviceId.equals(PublicObjects.otherDevices[i].device_id))
 						{
 							PublicObjects.otherDevices[i].status = otherDeviceStatus;
+							if(otherDeviceStatus == 2){
+								PublicObjects.getCurrentAllConnections().checkStatus();
+							}
 							hasFind = true;
 							break;
 						}
