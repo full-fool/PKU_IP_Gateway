@@ -70,8 +70,15 @@ public class LoginActivity extends Activity{
 	Runnable sendHeartBeat = new Runnable() {
 		
 		public void run() {
-			itsClient.sendHeartBeat();
-			heartBeatHandler.postDelayed(sendHeartBeat, 300000);  
+			if(itsClient.isWebsocketConnected()){
+				itsClient.sendHeartBeat();
+				heartBeatHandler.postDelayed(sendHeartBeat, 300000); 	
+			}
+			else{
+				System.out.println("in send heart beat, the socket is not established");
+				return;
+			}
+			 
 
 		}
 	};
@@ -149,13 +156,14 @@ public class LoginActivity extends Activity{
 		final ActionBar bar = getActionBar();
 		Drawable actionBarBGDrawable = getResources().getDrawable(R.drawable.actionbarbg); 
 		bar.setBackgroundDrawable(actionBarBGDrawable);
-		bar.setIcon(R.drawable.logo);
-		bar.setTitle("@PKU");
+		//bar.setIcon(R.drawable.logo);
+		bar.setDisplayShowHomeEnabled(false);
+		bar.setTitle("北大北门@PKU");
 		//setContentView(R.layout.activity_main);
 		
 		PublicObjects.setCurrentActivity(1);
 		PublicObjects.setCurrentMainActivity(LoginActivity.this);
-		PublicObjects.setThisDeviceStatus(-1);
+		PublicObjects.setThisDeviceStatus(5);
 		
 		//check the connection status
 		
@@ -195,7 +203,7 @@ public class LoginActivity extends Activity{
 		((EditText)findViewById(R.id.usname)).setText(username);
 		((EditText)findViewById(R.id.passwd)).setText(password);
 		
-		
+		/*
 		if(username != null && !username.equals("") && p != null && !p.equals("") && !changeUser)
 		{
 			PublicObjects.setThisDeviceStatus(5);
@@ -203,17 +211,41 @@ public class LoginActivity extends Activity{
 			//loginServer(getCurrentFocus());
 			AutoLoginHandler.post(AutoLogin);
 		}
+		*/
 
 	
 		
 	}
 	
 	protected void onResume(){
-		super.onResume();  
-		//PublicObjects.setThisDeviceStatus(5);
-		//checkStatus();
 		
-	}	
+		PublicObjects.setCurrentActivity(1);
+		System.out.println("login activity onResume");
+		super.onResume();
+		SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE); 
+		String p = sharedPre.getString("password", "");
+		if(username != null && !username.equals("") && p != null && !p.equals("") && !changeUser)
+		{
+			PublicObjects.setThisDeviceStatus(5);
+			AutoLoginHandler.post(AutoLogin);
+		}
+		
+		
+	}
+
+	protected void onRestart(){
+		
+		System.out.println("login activity onRestart");
+		super.onRestart();
+	}
+	
+	protected void onStart(){
+		
+		System.out.println("login activity onStart");
+		super.onStart();
+	}
+	
+
 	
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 	    if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -262,7 +294,9 @@ public class LoginActivity extends Activity{
 		}
 		//用来处理连接路由器时一台设备断开了，另外的设备都会断开。
 		itsClient.updateConnectionStatus();
+		changeUser = false;
 		startActivity(intent);
+		//finish();
 		
 		
 	}

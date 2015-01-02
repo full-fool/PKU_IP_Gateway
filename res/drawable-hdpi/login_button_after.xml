@@ -14,9 +14,9 @@
         android:topRightRadius="30dp" >
     </corners-->
     
-   <gradient android:startColor="#730006"  
+   <gradient android:startColor="#ae0a0a"  
                     android:centerY="0.75"  
-                    android:endColor="#fa7a80"  
+                    android:endColor="#ae0a0a"  
                     android:angle="0"
                       
             />   

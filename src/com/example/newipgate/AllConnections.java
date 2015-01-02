@@ -36,6 +36,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
@@ -43,6 +44,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -143,12 +145,13 @@ public class AllConnections extends Activity{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.all_connections);
 		
-		
+		System.out.println("allConnections onCreate");
 		final ActionBar bar = getActionBar();
 		Drawable actionBarBGDrawable = getResources().getDrawable(R.drawable.actionbarbg); 
 		bar.setBackgroundDrawable(actionBarBGDrawable);
-		bar.setIcon(R.drawable.logo);
-		bar.setTitle("@PKU");
+		//bar.setIcon(R.drawable.logo);
+		bar.setDisplayShowHomeEnabled(false);
+		bar.setTitle("北大北门@PKU");
 		Intent intent = new Intent(this,ITSClient.class);
 
 		PublicObjects.setCurrentActivity(2);
@@ -274,12 +277,24 @@ public class AllConnections extends Activity{
 	
 	
 	protected void onResume(){
+		PublicObjects.setCurrentActivity(2);
 		super.onResume();  
-		//PublicObjects.setThisDeviceStatus(5);
 		checkStatus();
 		
-	}		
+	}	
 	
+
+	
+	
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+
+			Intent intent= new Intent(Intent.ACTION_MAIN); 
+			intent.addCategory(Intent.CATEGORY_HOME);
+			startActivity(intent);
+	    }
+	    return super.onKeyDown(keyCode, event);
+	}
 	
 	 protected void onDestroy() {  
 	        unbindService(mConn);  

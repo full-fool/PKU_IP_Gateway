@@ -293,22 +293,19 @@ public class ITSClient extends Service{
 					{
 						int indexOfNext = response.indexOf(resultStrings[1]);
 						final String connectionNum = response.substring(indexOfNext-3, indexOfNext-1);
-						//mainActivity.ShowInfo("连接成功" + "\n当前连接：" + connectionNum);
 						System.out.println("连接成功" + "\n当前连接：" + connectionNum);
 					}
 					else 
 					{
-						//mainActivity.ShowInfo("连接成功" + "\n未知错误，无法获取连接数");
 						System.out.println("连接成功" + "\n未知错误，无法获取连接数");
 					}
 					if(!isWebsocketConnected()){
 						//mainActivity.tryStartWebsocket();	
-						mainActivity.startHeartBeat();
+						//mainActivity.startHeartBeat();
 					}
 					updateConnectionStatus();
 				}
 				else {
-					//mainActivity.ShowInfo("未知错误");
 					System.out.println("未知错误, the response is ");
 				}
 			}
@@ -503,6 +500,7 @@ public class ITSClient extends Service{
                             LoginActivity.setIsTrying2ConnectServer(false);
                             System.out.println("onOpen");
         					wsc.sendTextMessage(InteractionInfo.formGetOtherDevices());
+        					mainActivity.startHeartBeat();
                     }
 
                     @Override

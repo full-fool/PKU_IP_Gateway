@@ -6,17 +6,11 @@
         android:color="#ffffff" >
     </solid>
 
-    <!--  corners
-        android:radius="30dp"
-        android:bottomLeftRadius="30dp"
-        android:bottomRightRadius="30dp"
-        android:topLeftRadius="30dp"
-        android:topRightRadius="30dp" >
-    </corners-->
+
     
-   <gradient android:startColor="#c0000b"    
+   <gradient android:startColor="#d00c0c"    
                     android:centerY="0.75"  
-                    android:endColor="#fb9ca0"  
+                    android:endColor="#d00c0c"  
                     android:angle="0"
                       
             />   
