@@ -54,6 +54,7 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -63,6 +64,7 @@ import android.widget.Toast;
 public class AllConnections extends Activity{
 	//private ListView lv;
 	private GridView gv;
+	private ListView lv;
 	private final int CHARGE = 4;
 	private final int FREE = 3;
 	private final int DISCONNECTTHIS = 1;
@@ -71,6 +73,7 @@ public class AllConnections extends Activity{
 	private final int IPHONE = 2;
 	private boolean hasRefreshed = false;
 	private boolean isBusy = false;
+	private int selectedItem = 0;
 	//private ProgressDialog progressDialog = null;
 	private CustomProgressDialog customProgressDialog = null;
 
@@ -84,23 +87,6 @@ public class AllConnections extends Activity{
 
 	private ArrayList<HashMap<String, Object>> items=new ArrayList<HashMap<String, Object>>();
 	
-	
-	/*
-	Handler refreshHandler = new Handler();
-	Runnable activeRefresh = new Runnable() {
-		
-		public void run() {
-			System.out.println("active refresh executed!");
-			refresh();
-			if(!hasRefreshed){
-				hasRefreshed = true;
-				refreshHandler.postDelayed(activeRefresh, 3000);  
-			}
-
-		}
-	};
-	
-	*/
 	
 	Handler hasStatusChangedHandler = new Handler();
 	Runnable hasStatusChanged = new Runnable() {
@@ -143,8 +129,8 @@ public class AllConnections extends Activity{
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.all_connections);
-		
+		//setContentView(R.layout.all_connections);
+		setContentView(R.layout.control);
 		System.out.println("allConnections onCreate");
 		final ActionBar bar = getActionBar();
 		Drawable actionBarBGDrawable = getResources().getDrawable(R.drawable.actionbarbg); 
@@ -172,7 +158,8 @@ public class AllConnections extends Activity{
 		refresh();
 		
 		//things happen after the user click on one of these items 
-		gv.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+		
+		lv.setOnItemClickListener(new AdapterView.OnItemClickListener(){
 			public void onItemClick(AdapterView<?> parent, View view,
 			  int position, long id) {
 				
@@ -183,11 +170,7 @@ public class AllConnections extends Activity{
 				return;
 				
 			}
-			/*
-			 ListView listView = (ListView)parent;
-			 final int selectedPosition = position;  
-			 HashMap<String, Object> map = (HashMap<String, Object>) listView.getItemAtPosition(position);
-			 */
+			
 			
 			 GridView gridView = (GridView)parent;
 			 final int selectedPosition = position;  
@@ -271,9 +254,10 @@ public class AllConnections extends Activity{
 		    } 
 		    
 		    });
-		    
+	    
 		    
 	}
+	
 	
 	
 	protected void onResume(){
@@ -321,8 +305,7 @@ public class AllConnections extends Activity{
 		}
 		items.clear();
 		//lv = (ListView) findViewById(R.id.list);
-		HashMap<String, Object> map = new HashMap<String, Object>();
-		//map.put("icon", getResources().getDrawable(R.drawable.android));
+		HashMap<String, Object> map = new HashMap<String, Object>();		
 		map.put("device_id", PublicObjects.thisDeviceInfo.device_id);
 		if(PublicObjects.getThisDeviceStatus() == DISCONNECTTHIS || PublicObjects.getThisDeviceStatus() == DISCONNECTALL)
 		{
@@ -351,8 +334,11 @@ public class AllConnections extends Activity{
 
 		}
 		
+		
 		items.add(map);
-		//System.out.println("in refresh, otherdevicenum is "+ PublicObjects.otherDeviceNum);
+
+		
+		
 		for (int i=0; i<PublicObjects.otherDeviceNum; i++) {
 			
 			HashMap<String, Object> newMap = new HashMap<String, Object>();
@@ -390,14 +376,18 @@ public class AllConnections extends Activity{
 				newMap.put("status", "状态错误" + PublicObjects.otherDevices[i].status);
 			}
 			items.add(newMap);
+			
 
 		}
 		
+		
 		adapter = new Adapter(this, items, R.layout.app_item, new String[] {
-				"icon", "status", "device_id"}, new int[] { R.id.icon,R.id.connectionState, R.id.deviceID});
-		gv = (GridView) findViewById(R.id.gridview);
-		gv.setNumColumns(2);
-		gv.setAdapter(adapter);
+				"icon"}, new int[] { R.id.icon});
+		lv = (ListView)findViewById(R.id.listview);
+		lv.setAdapter(adapter);
+		//gv = (GridView) findViewById(R.id.gridview);
+		//gv.setNumColumns(2);
+		//gv.setAdapter(adapter);
 	}
 	
 	
@@ -428,9 +418,11 @@ public class AllConnections extends Activity{
 				//未连接网关
 				if(responseBody.equals("")){
 					//ShowInfo("当前连接状态：未连接");
-					PublicObjects.setThisDeviceStatus(1);
-					itsClient.updateConnectionStatus();
-					refreshHandler.sendEmptyMessage(0);
+					if(PublicObjects.getThisDeviceStatus() != 1){
+						PublicObjects.setThisDeviceStatus(1);
+						itsClient.updateConnectionStatus();
+						refreshHandler.sendEmptyMessage(0);	
+					}
 				}
 				else {
 					getaddr = "http://www.stackoverflow.com";
@@ -447,15 +439,21 @@ public class AllConnections extends Activity{
 					}
 					if(responseBody.equals("")){
 						//ShowInfo("当前连接状态：免费网址");
-						PublicObjects.setThisDeviceStatus(3);
-						itsClient.updateConnectionStatus();
-						refreshHandler.sendEmptyMessage(0);
+						if(PublicObjects.getThisDeviceStatus() != 3){
+							PublicObjects.setThisDeviceStatus(3);
+							itsClient.updateConnectionStatus();
+							refreshHandler.sendEmptyMessage(0);	
+							
+						}
 					}
 					else{
 						//ShowInfo("当前连接状态：收费网址");
-						PublicObjects.setThisDeviceStatus(4);
-						itsClient.updateConnectionStatus();
-						refreshHandler.sendEmptyMessage(0);
+						if(PublicObjects.getThisDeviceStatus() != 4){
+							PublicObjects.setThisDeviceStatus(4);
+							itsClient.updateConnectionStatus();
+							refreshHandler.sendEmptyMessage(0);		
+						}
+					
 					}
 					
 				}

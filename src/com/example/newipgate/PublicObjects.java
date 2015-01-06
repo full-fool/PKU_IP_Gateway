@@ -101,6 +101,15 @@ public class PublicObjects {
 		thisDeviceInfo.status = _status;
 	}
 	
+	public static void setAllOtherDeviceStatus(int _status)
+	{
+		for(int i=0; i<4; i++){
+			if(otherDevices[i].device_id != null){
+				otherDevices[i].status = _status;
+			}
+		}
+	}
+	
 	public static void setThisDeviceType(int _type)
 	{
 		thisDeviceInfo.type = _type;

@@ -63,9 +63,9 @@ public final class R {
         public static final int username=0x7f020018;
     }
     public static final class id {
-        public static final int action_diconnectall=0x7f0b0010;
-        public static final int action_update=0x7f0b0011;
-        public static final int change_user=0x7f0b0012;
+        public static final int action_diconnectall=0x7f0b0011;
+        public static final int action_update=0x7f0b0012;
+        public static final int change_user=0x7f0b0013;
         public static final int charge=0x7f0b0002;
         public static final int checkstate=0x7f0b0007;
         public static final int connect=0x7f0b0004;
@@ -75,23 +75,25 @@ public final class R {
         public static final int disconnect_this=0x7f0b0005;
         public static final int gridview=0x7f0b0009;
         public static final int icon=0x7f0b000a;
-        public static final int id_tv_loadingmsg=0x7f0b000e;
+        public static final int id_tv_loadingmsg=0x7f0b000f;
         public static final int info=0x7f0b0008;
-        public static final int loadingImageView=0x7f0b000d;
-        public static final int logo=0x7f0b000f;
+        public static final int listview=0x7f0b000d;
+        public static final int loadingImageView=0x7f0b000e;
+        public static final int logo=0x7f0b0010;
         public static final int passwd=0x7f0b0001;
         public static final int remember=0x7f0b0003;
-        public static final int save_userinfo=0x7f0b0013;
-        public static final int update_password_toserver=0x7f0b0014;
+        public static final int save_userinfo=0x7f0b0014;
+        public static final int update_password_toserver=0x7f0b0015;
         public static final int usname=0x7f0b0000;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
         public static final int all_connections=0x7f030001;
         public static final int app_item=0x7f030002;
-        public static final int customprogressdialog=0x7f030003;
-        public static final int login_page=0x7f030004;
-        public static final int welcome_page=0x7f030005;
+        public static final int control=0x7f030003;
+        public static final int customprogressdialog=0x7f030004;
+        public static final int login_page=0x7f030005;
+        public static final int welcome_page=0x7f030006;
     }
     public static final class menu {
         public static final int allconnectionmenu=0x7f0a0000;

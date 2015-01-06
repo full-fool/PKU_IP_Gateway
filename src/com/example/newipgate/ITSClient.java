@@ -325,6 +325,8 @@ public class ITSClient extends Service{
 					//mainActivity.ShowInfo("断开全部连接成功");
 					System.out.println("断开全部连接成功");
 					updateConnectionStatus();
+					PublicObjects.setAllOtherDeviceStatus(1);
+					
 				}else{
 					//mainActivity.ShowInfo("unknown error");					
 					System.out.println("unknown error");
@@ -461,8 +463,8 @@ public class ITSClient extends Service{
             //int loginResult = login();
             
 			if(hasIPv6() == 1){
-            	url = "ws://[2001:da8:201:1146:d5e0:2f0f:7443:cb91]:9000/";
-				//url = "ws://162.105.146.140:9000/";
+            	//url = "ws://[2001:da8:201:1146:d5e0:2f0f:7443:cb91]:9000/";
+				url = "ws://162.105.146.140:9000/";
 
             }
 			else{
