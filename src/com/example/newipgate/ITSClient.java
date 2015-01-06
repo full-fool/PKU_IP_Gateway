@@ -463,8 +463,8 @@ public class ITSClient extends Service{
             //int loginResult = login();
             
 			if(hasIPv6() == 1){
-            	//url = "ws://[2001:da8:201:1146:d5e0:2f0f:7443:cb91]:9000/";
-				url = "ws://162.105.146.140:9000/";
+            	url = "ws://[2001:da8:201:1146:d5e0:2f0f:7443:cb91]:9000/";
+				//url = "ws://162.105.146.140:9000/";
 
             }
 			else{
@@ -688,6 +688,7 @@ public class ITSClient extends Service{
 						System.out.println("the deleted device not found");
 					}
 					if(PublicObjects.getCurrentActivity() == 2){
+						PublicObjects.getCurrentAllConnections().resetSelectedItem();
 						PublicObjects.getCurrentAllConnections().refresh();
 					}
 				} catch (JSONException e) {

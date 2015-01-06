@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.security.auth.PrivateCredentialPermission;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
@@ -50,8 +52,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
@@ -172,16 +177,17 @@ public class AllConnections extends Activity{
 			}
 			
 			
-			 GridView gridView = (GridView)parent;
-			 final int selectedPosition = position;  
-			 HashMap<String, Object> map = (HashMap<String, Object>) gridView.getItemAtPosition(position);
-
-
+			 ListView listView = (ListView)parent;
+			 HashMap<String, Object> map = (HashMap<String, Object>) listView.getItemAtPosition(position);
+			 
+			 
 			 //device_id只有在连接建立之后才有
-			 final String device_id = map.get("device_id").toString();
-			 selectedOperation = 0;
-			 final String[] arrayFruit = new String[] { "连接免费网址", "连接收费网址", "断开连接"}; 
-		        Dialog alertDialog = new AlertDialog.Builder(AllConnections.this). 
+			 //final String device_id = map.get("device_id").toString();
+			 //final String[] arrayFruit = new String[] { "连接免费网址", "连接收费网址", "断开连接"}; 
+		     selectedItem = position;
+			 refreMain(position);
+			 /*
+			 Dialog alertDialog = new AlertDialog.Builder(AllConnections.this). 
 		                setTitle("请选择将要执行的操作"). 
 		                setIcon(R.drawable.ic_launcher) 
 		                .setSingleChoiceItems(arrayFruit, 0, new DialogInterface.OnClickListener() { 
@@ -251,6 +257,8 @@ public class AllConnections extends Activity{
 		                }). 
 		                create(); 
 		        alertDialog.show(); 
+		        
+		        */
 		    } 
 		    
 		    });
@@ -298,6 +306,61 @@ public class AllConnections extends Activity{
 		Intent intent = new Intent(AllConnections.this, LoginActivity.class);
 		startActivity(intent);
 	}
+	
+	private void startLoading(){
+		 customProgressDialog = CustomProgressDialog.createDialog(AllConnections.this);
+	     customProgressDialog.setMessage("loading...");
+	     customProgressDialog.setCancelable(false);
+	     customProgressDialog.show();
+	     hasStatusChangedHandler.postDelayed(hasStatusChanged, 5000); 
+	}
+	
+	public void connectFree(View v){
+		startLoading();
+		if(selectedItem== 0){
+    		itsClient.connect(1);
+    	}
+    	else {
+    		HashMap<String, Object> tempHashMap = items.get(selectedItem);
+    		String device_id = tempHashMap.get("device_id").toString();
+    		itsClient.changeOtherDevice(device_id, FREE);
+    		itsClient.getOtherDevices();
+		}	
+	}
+	
+	public void connectCharge(View v){
+		startLoading();
+		if(selectedItem== 0){
+    		itsClient.connect(2);
+    	}
+    	else {
+    		HashMap<String, Object> tempHashMap = items.get(selectedItem);
+    		String device_id = tempHashMap.get("device_id").toString();
+    		itsClient.changeOtherDevice(device_id, CHARGE);
+    		itsClient.getOtherDevices();
+		}	
+	}
+	
+	
+	public void disconnectThis(View v){
+		startLoading();
+		if(selectedItem== 0){
+    		itsClient.disconnectThis();
+    	}
+    	else {
+    		HashMap<String, Object> tempHashMap = items.get(selectedItem);
+    		String device_id = tempHashMap.get("device_id").toString();
+    		itsClient.changeOtherDevice(device_id, DISCONNECTTHIS);
+    		itsClient.getOtherDevices();
+		}		
+	}
+	
+	
+	public void disconnectAll(View v){
+		startLoading();
+		itsClient.disconnectAll();	
+	}
+	
 	public void refresh(){
 		//PublicObjects.printOtherDevices();
 		if(customProgressDialog != null && customProgressDialog.isShowing()){
@@ -349,16 +412,30 @@ public class AllConnections extends Activity{
 			else {
 				if(PublicObjects.otherDevices[i].status == DISCONNECTTHIS || PublicObjects.otherDevices[i].status == DISCONNECTALL
 						|| PublicObjects.otherDevices[i].status == 5){
-					newMap.put("icon", getResources().getDrawable(R.drawable.androidoff));
+					switch(PublicObjects.otherDevices[i].type){ 
+					case 1: newMap.put("icon", getResources().getDrawable(R.drawable.androidoff)); break;
+					case 2: newMap.put("icon", getResources().getDrawable(R.drawable.iphoneoff)); break;
+					case 3: newMap.put("icon", getResources().getDrawable(R.drawable.winphoneoff)); break;
+					case 4: newMap.put("icon", getResources().getDrawable(R.drawable.pcoff)); break;
+					case 5: newMap.put("icon", getResources().getDrawable(R.drawable.linuxoff)); break;
+					case 6: newMap.put("icon", getResources().getDrawable(R.drawable.macoff)); break;
+					default:newMap.put("icon", getResources().getDrawable(R.drawable.pcoff));
+					}
 				}
 				else{
-					newMap.put("icon", getResources().getDrawable(R.drawable.android));
+					switch(PublicObjects.otherDevices[i].type){ 
+					case 1: newMap.put("icon", getResources().getDrawable(R.drawable.android)); break;
+					case 2: newMap.put("icon", getResources().getDrawable(R.drawable.iphone)); break;
+					case 3: newMap.put("icon", getResources().getDrawable(R.drawable.winphone)); break;
+					case 4: newMap.put("icon", getResources().getDrawable(R.drawable.pc)); break;
+					case 5: newMap.put("icon", getResources().getDrawable(R.drawable.linux)); break;
+					case 6: newMap.put("icon", getResources().getDrawable(R.drawable.mac)); break;
+					default:newMap.put("icon", getResources().getDrawable(R.drawable.pc));
+					}
 				}
 			}
 			
 			newMap.put("device_id", PublicObjects.otherDevices[i].device_id);
-			//System.out.println("in refresh, the device_id is " + PublicObjects.otherDevices[i].device_id);
-			
 			if(PublicObjects.otherDevices[i].status == DISCONNECTTHIS || PublicObjects.otherDevices[i].status == DISCONNECTALL)
 			{
 				newMap.put("status", "未连接");
@@ -379,17 +456,49 @@ public class AllConnections extends Activity{
 			
 
 		}
+	
+		LinearLayout rightListView= (LinearLayout)findViewById(R.id.listviewlayout);
+		if(items.size() == 0){
+			rightListView.setPadding(10, 250, 10, 10);
+		}
+		else if(items.size() == 1){
+			rightListView.setPadding(10, 200, 10, 10);
+		}
+		else if(items.size() == 2){
+			rightListView.setPadding(10, 150, 10, 10);
+		}
+		else{
+			rightListView.setPadding(10, 100, 10, 10);
+		}
 		
-		
+	
 		adapter = new Adapter(this, items, R.layout.app_item, new String[] {
 				"icon"}, new int[] { R.id.icon});
 		lv = (ListView)findViewById(R.id.listview);
 		lv.setAdapter(adapter);
-		//gv = (GridView) findViewById(R.id.gridview);
-		//gv.setNumColumns(2);
-		//gv.setAdapter(adapter);
+		refreMain(selectedItem);
 	}
 	
+	public void refreMain(int position){
+		ImageView bigIcon = (ImageView)findViewById(R.id.bigicon);
+		TextView statusText = (TextView)findViewById(R.id.connectionState);
+		TextView deviceIdText = (TextView)findViewById(R.id.deviceID);
+		HashMap<String, Object> tempHashMap = items.get(position);
+		statusText.setText(tempHashMap.get("status").toString());
+		deviceIdText.setText(tempHashMap.get("device_id").toString());
+		bigIcon.setImageDrawable((Drawable)tempHashMap.get("icon"));
+		Button disconnectAllButton = (Button)findViewById(R.id.disconnect_all);
+		if(position == 0){
+			disconnectAllButton.setVisibility(View.VISIBLE);
+		}
+		else{
+			disconnectAllButton.setVisibility(View.GONE);
+		}
+		
+	}
+	public void resetSelectedItem(){
+		selectedItem = 0;
+	}
 	
 	public void checkStatus(){
 		//itsClient.updateOtherDevice();
@@ -472,10 +581,7 @@ public class AllConnections extends Activity{
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
 		  // Handle presses on the action bar items
-		if(item.getItemId() == R.id.action_diconnectall){
-			itsClient.disconnectAll();
-		}
-		else if(item.getItemId() == R.id.action_update){
+		if(item.getItemId() == R.id.action_update){
 			itsClient.updateOtherDevice();
 		}
 		else if(item.getItemId() == R.id.change_user){

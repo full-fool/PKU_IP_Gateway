@@ -6,6 +6,7 @@
     <color name="textgrey">#a5b2c8</color>  
     <color name="pkured">#c0000b</color>
     <color name="bggreen">#f3f2ec</color>
+	<color name="bgrightlist">#e0ddcd</color>
     
     
 </resources>

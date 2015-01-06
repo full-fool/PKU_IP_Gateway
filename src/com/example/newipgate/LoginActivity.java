@@ -348,7 +348,9 @@ public class LoginActivity extends Activity{
 	}
 	
 	public String getPassword(){
-		return 		((EditText)findViewById(R.id.passwd)).getText().toString();
+		String returnPassword = ((EditText)findViewById(R.id.passwd)).getText().toString(); 
+		System.out.println("in getpassword, the password is " + returnPassword);
+		return 	returnPassword;
 
 	}
 
@@ -363,6 +365,7 @@ public class LoginActivity extends Activity{
 		SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE);  
 		Editor editor = sharedPre.edit(); 
 		editor.putString("username", u);
+		System.out.println("in save, before encryption, the password is " + p);		
 		String encryptedPassword = encrypt.encrypt(p);
 		editor.putString("password", encryptedPassword);
 		System.out.println("in save, username is " + u + " the password is " + encryptedPassword);
@@ -389,37 +392,12 @@ public class LoginActivity extends Activity{
 		itsClient.connect(type);
 	}
 	
-	public void connectButton(View view)
-	{
-		charge = (Switch)findViewById(R.id.charge);
-		remember = (Switch)findViewById(R.id.remember);
-		final boolean charge_or_not = charge.isChecked();
-		final boolean remember_or_not = remember.isChecked();
-		username = ((EditText)findViewById(R.id.usname)).getText().toString();
-		password = ((EditText)findViewById(R.id.passwd)).getText().toString();
-		if(remember_or_not)
-		{
-			System.out.println("User chooses to store username " + username + " and password " + password);
-			saveUserInfo(username, password);
-		}
-		if(charge_or_not)
-		{
-			connect(2);
-		}
-		else {
-			connect(1);
-		}
-	}
-
 	public void disconnectAll()
 	{
 		itsClient.disconnectAll();
 	}
 	
-	public void disconnectAllButton(View view)
-	{
-		disconnectAll();
-	}
+	
 	
 	public void disconnectThis()
 	{
@@ -427,10 +405,6 @@ public class LoginActivity extends Activity{
 
 	}
 	
-	public void disconnectThisButton(View view)
-	{
-		disconnectThis();
-	}
 
 	/*
 	public void checkAllConnections(View view){
