@@ -482,10 +482,10 @@ public class AllConnections extends Activity{
 	public void refreMain(int position){
 		ImageView bigIcon = (ImageView)findViewById(R.id.bigicon);
 		TextView statusText = (TextView)findViewById(R.id.connectionState);
-		TextView deviceIdText = (TextView)findViewById(R.id.deviceID);
+		//TextView deviceIdText = (TextView)findViewById(R.id.deviceID);
 		HashMap<String, Object> tempHashMap = items.get(position);
 		statusText.setText(tempHashMap.get("status").toString());
-		deviceIdText.setText(tempHashMap.get("device_id").toString());
+		//deviceIdText.setText(tempHashMap.get("device_id").toString());
 		bigIcon.setImageDrawable((Drawable)tempHashMap.get("icon"));
 		Button disconnectAllButton = (Button)findViewById(R.id.disconnect_all);
 		if(position == 0){

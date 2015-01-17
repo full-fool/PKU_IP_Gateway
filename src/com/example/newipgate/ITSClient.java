@@ -122,6 +122,8 @@ public class ITSClient extends Service{
 	   public void onDestroy() {
 	        // Cancel the persistent notification.
 		   System.out.println("<----------------ITSClient Service is destroyed!------------->");
+		   wsc.disconnect();
+		   
 	        // Tell the user we stopped.
 	    }
 	public static  void setMainActivity(LoginActivity thisActivity){
@@ -463,9 +465,8 @@ public class ITSClient extends Service{
             //int loginResult = login();
             
 			if(hasIPv6() == 1){
-            	url = "ws://[2001:da8:201:1146:d5e0:2f0f:7443:cb91]:9000/";
+            	url = "ws://[2001:da8:201:1146:b4d9:63cd:133d:63ab]:9000/";
 				//url = "ws://162.105.146.140:9000/";
-
             }
 			else{
 				url = "ws://162.105.146.140:9000/";
