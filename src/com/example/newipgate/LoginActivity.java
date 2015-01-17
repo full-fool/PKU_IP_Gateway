@@ -156,25 +156,22 @@ public class LoginActivity extends Activity{
 		final ActionBar bar = getActionBar();
 		Drawable actionBarBGDrawable = getResources().getDrawable(R.drawable.actionbarbg); 
 		bar.setBackgroundDrawable(actionBarBGDrawable);
-		//bar.setIcon(R.drawable.logo);
 		bar.setDisplayShowHomeEnabled(false);
 		bar.setTitle("北大北门@PKU");
-		//setContentView(R.layout.activity_main);
+
 		
 		PublicObjects.setCurrentActivity(1);
-		PublicObjects.setCurrentMainActivity(LoginActivity.this);
+		PublicObjects.setCurrentLoginActivity(LoginActivity.this);
 		PublicObjects.setThisDeviceStatus(5);
 		
 		//check the connection status
-		
-		
 		System.out.println("mainactivity oncreate");
 		Intent intent = new Intent(this,ITSClient.class);
 		bindService(intent, mConn, Context.BIND_AUTO_CREATE); 
-		ITSClient.setMainActivity(LoginActivity.this);
+		ITSClient.setLoginActivity(LoginActivity.this);
 		
 		
-		
+		//this piece of code is intentded to keep the menu bar in overflow
 		 try {
 	         ViewConfiguration config = ViewConfiguration.get(this);
 	         Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
@@ -188,6 +185,7 @@ public class LoginActivity extends Activity{
 	
 		encrypt = new Encrypt(this);
 		//infoStr = (TextView)findViewById(R.id.info);
+		
 		SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE); 
 		username = sharedPre.getString("username", "");		
 		String p = sharedPre.getString("password", "");
@@ -219,6 +217,7 @@ public class LoginActivity extends Activity{
 	
 	protected void onResume(){
 		
+		
 		PublicObjects.setCurrentActivity(1);
 		System.out.println("login activity onResume");
 		super.onResume();
@@ -229,6 +228,7 @@ public class LoginActivity extends Activity{
 			PublicObjects.setThisDeviceStatus(5);
 			AutoLoginHandler.post(AutoLogin);
 		}
+		
 		
 		
 	}

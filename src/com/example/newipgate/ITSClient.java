@@ -68,7 +68,9 @@ public class ITSClient extends Service{
 	
 	private DefaultHttpClient client;
 
-	private static LoginActivity mainActivity;
+	private static WelcomePage welcomeActivity;
+	
+	private static LoginActivity loginActivity;
 	
 	private final WebSocketConnection wsc = new WebSocketConnection();
 	
@@ -76,9 +78,9 @@ public class ITSClient extends Service{
 		
 	public void onCreate() {
 		super.onCreate(); 
-		mainActivity = PublicObjects.getCurrentMainActivity();
+		welcomeActivity = PublicObjects.getCurrentWelcomeActivity();
 		
-		InputStream ins = mainActivity.getResources().openRawResource(R.raw.ca);
+		InputStream ins = welcomeActivity.getResources().openRawResource(R.raw.ca);
 		CertificateFactory cerFactory;
 		try {
 			cerFactory = CertificateFactory.getInstance("X.509");
@@ -126,8 +128,9 @@ public class ITSClient extends Service{
 		   
 	        // Tell the user we stopped.
 	    }
-	public static  void setMainActivity(LoginActivity thisActivity){
-		mainActivity = thisActivity;
+
+	public static  void setLoginActivity(LoginActivity thisActivity){
+		loginActivity = thisActivity;
 	}
 	
 	
@@ -148,8 +151,8 @@ public class ITSClient extends Service{
 			post.addHeader("Accept-Language", "zh-cn,zh;q=0.8,en-us;q=0.5,en;q=0.3");
 			post.addHeader("Accept-Encoding", "gzip, deflate");
 			post.addHeader("Referer", "https://its.pku.edu.cn/");
-			String username = mainActivity.getUsername();
-			String password = mainActivity.getPassword();
+			String username = loginActivity.getUsername();
+			String password = loginActivity.getPassword();
 			params.add(new BasicNameValuePair("username1", username));
 			params.add(new BasicNameValuePair("password", password));
 			System.out.println("in login, the username is " + username + " and the password is " + password);
@@ -473,14 +476,14 @@ public class ITSClient extends Service{
 			}
 			
 			try {
-				MD5password = URLEncoder.encode(md5(mainActivity.getPassword()), "utf-8");
+				MD5password = URLEncoder.encode(md5(loginActivity.getPassword()), "utf-8");
 			} catch (UnsupportedEncodingException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} 
-			System.out.println("in startwebsocket, the user name is " + mainActivity.getUsername() + " password is " + MD5password +
+			System.out.println("in startwebsocket, the user name is " + loginActivity.getUsername() + " password is " + MD5password +
 					" status " + PublicObjects.getThisDeviceStatus());
-			wsc.connect(url + "login?student_id=" + mainActivity.getUsername() + "&password=" + MD5password + "&type=1&status=" + PublicObjects.getThisDeviceStatus(), 
+			wsc.connect(url + "login?student_id=" + loginActivity.getUsername() + "&password=" + MD5password + "&type=1&status=" + PublicObjects.getThisDeviceStatus(), 
 					new WebSocketConnectionHandler(){
 
                     @Override
@@ -503,7 +506,7 @@ public class ITSClient extends Service{
                             LoginActivity.setIsTrying2ConnectServer(false);
                             System.out.println("onOpen");
         					wsc.sendTextMessage(InteractionInfo.formGetOtherDevices());
-        					mainActivity.startHeartBeat();
+        					loginActivity.startHeartBeat();
                     }
 
                     @Override
@@ -567,7 +570,7 @@ public class ITSClient extends Service{
         {
         	PublicObjects.setThisDeviceDeviceID(payload);
         	PublicObjects.setThisDeviceType(1);
-        	mainActivity.changeActivity();
+        	loginActivity.changeActivity();
         }
         else {
         	JSONObject jsonObject = null;
@@ -799,7 +802,7 @@ public class ITSClient extends Service{
 			{
 				try {
 					String newPassword = jsonObject.getString("content");
-					mainActivity.updatePassword(newPassword);
+					loginActivity.updatePassword(newPassword);
 						
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block

@@ -10,7 +10,8 @@ public class PublicObjects {
 	public static DeviceInfo[] otherDevices = new DeviceInfo[4];
 	public static int otherDeviceNum = 0;
 	private static TextView infoStr;
-	public static LoginActivity currentMainActivity;
+	public static WelcomePage currentWelcomePageActivity;
+	public static LoginActivity currentLoginActivity;
 	public static AllConnections currentAllConnections;
 	private static final int MAIN_ACTIVITY = 1;
 	private static final int ALL_CONNECTIONS_ACTIVITY = 2;
@@ -48,8 +49,8 @@ public class PublicObjects {
 	}
 	
 	
-	public static void setCurrentMainActivity(LoginActivity thisActivity){
-		currentMainActivity = thisActivity;
+	public static void setCurrentWelcomeActivity(WelcomePage thisActivity){
+		currentWelcomePageActivity = thisActivity;
 		if(!otherDevicesIsInitiated){
 			initiateOtherDevice();
 			otherDevicesIsInitiated = true;
@@ -57,9 +58,24 @@ public class PublicObjects {
 		
 	}
 	
-	public static LoginActivity getCurrentMainActivity(){
-		return currentMainActivity;
+	public static void setCurrentLoginActivity(LoginActivity thisActivity){
+		currentLoginActivity = thisActivity;
+		if(!otherDevicesIsInitiated){
+			initiateOtherDevice();
+			otherDevicesIsInitiated = true;
+		}
+		
 	}
+	
+	
+	public static WelcomePage getCurrentWelcomeActivity(){
+		return currentWelcomePageActivity;
+	}
+	
+	public static LoginActivity getCurrentLoginActivity(){
+		return currentLoginActivity;
+	}
+	
 	
 	public static void setCurrentAllconnections(AllConnections thisActivity){
 		currentAllConnections = thisActivity;

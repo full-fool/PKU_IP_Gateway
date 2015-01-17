@@ -134,22 +134,26 @@ public class AllConnections extends Activity{
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		//setContentView(R.layout.all_connections);
 		setContentView(R.layout.control);
 		System.out.println("allConnections onCreate");
+		
+		//set up actionbar 
 		final ActionBar bar = getActionBar();
 		Drawable actionBarBGDrawable = getResources().getDrawable(R.drawable.actionbarbg); 
 		bar.setBackgroundDrawable(actionBarBGDrawable);
-		//bar.setIcon(R.drawable.logo);
 		bar.setDisplayShowHomeEnabled(false);
 		bar.setTitle("北大北门@PKU");
+		
+		//bind the itsclient service
 		Intent intent = new Intent(this,ITSClient.class);
-
 		PublicObjects.setCurrentActivity(2);
 		PublicObjects.setCurrentAllconnections(AllConnections.this);
-		bindService(intent, mConn, Context.BIND_AUTO_CREATE); 
+		bindService(intent, mConn, Context.BIND_AUTO_CREATE);
 		
-		 try {
+		System.out.println("after the binding of the itsclient service");
+		
+		//set up the overflow menubar 
+		try {
 	         ViewConfiguration config = ViewConfiguration.get(this);
 	         Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
 	         if(menuKeyField != null) {
@@ -159,16 +163,13 @@ public class AllConnections extends Activity{
 	     } catch (Exception e) {
 	         e.printStackTrace();
 	     }
-		
-		refresh();
+
+		refresh();		
 		
 		//things happen after the user click on one of these items 
-		
 		lv.setOnItemClickListener(new AdapterView.OnItemClickListener(){
 			public void onItemClick(AdapterView<?> parent, View view,
 			  int position, long id) {
-				
-				
 				//only when the websocket is established, then the item will be clicked
 			if(!itsClient.isWebsocketConnected()){
 				System.out.println("the websocket is not established");
@@ -177,102 +178,27 @@ public class AllConnections extends Activity{
 			}
 			
 			
-			 ListView listView = (ListView)parent;
-			 HashMap<String, Object> map = (HashMap<String, Object>) listView.getItemAtPosition(position);
-			 
-			 
-			 //device_id只有在连接建立之后才有
-			 //final String device_id = map.get("device_id").toString();
-			 //final String[] arrayFruit = new String[] { "连接免费网址", "连接收费网址", "断开连接"}; 
+			 //ListView listView = (ListView)parent;
+			 //HashMap<String, Object> map = (HashMap<String, Object>) listView.getItemAtPosition(position);
 		     selectedItem = position;
 			 refreMain(position);
-			 /*
-			 Dialog alertDialog = new AlertDialog.Builder(AllConnections.this). 
-		                setTitle("请选择将要执行的操作"). 
-		                setIcon(R.drawable.ic_launcher) 
-		                .setSingleChoiceItems(arrayFruit, 0, new DialogInterface.OnClickListener() { 
-		  
-		                    @Override 
-		                    public void onClick(DialogInterface dialog, int which) { 
-		                        selectedOperation = which; 
-		                    } 
-		                }). 
-		                
-		                setNegativeButton("确认", new DialogInterface.OnClickListener() { 
-		 
-		                    @Override 
-		                    public void onClick(DialogInterface dialog, int which) { 
-
-		                    //connect free	
-		                    
-		                    customProgressDialog = CustomProgressDialog.createDialog(AllConnections.this);
-		                    customProgressDialog.setMessage("loading...");
-		                    customProgressDialog.setCancelable(false);
-		                    customProgressDialog.show();
-		    				hasStatusChangedHandler.postDelayed(hasStatusChanged, 5000);  
-
-
-		                    if(selectedOperation == 0)
-		                    {
-		                    	//if the device is itself, execute the method and update status
-		                    	if(selectedPosition== 0){
-		                    		itsClient.connect(1);
-		                    	}
-		                    	//if the device is not itself, then updateOtherDeviceStatus
-		                    	else {
-		                    		itsClient.changeOtherDevice(device_id, FREE);
-		                    		itsClient.getOtherDevices();
-								}		                    	
-		                    }
-		                    //connect charge
-		                    else if (selectedOperation == 1){
-		                    	//if the device is itself, execute the method and update status
-		                    	if(selectedPosition== 0){
-		                    		itsClient.connect(2);
-		                    	}
-		                    	//if the device is not itself, then updateOtherDeviceStatus
-		                    	else {
-		                    		itsClient.changeOtherDevice(device_id, CHARGE);
-		                    		itsClient.getOtherDevices();
-								}	
-							}
-		                    else {
-		                    	//if the device is itself, execute the method and update status
-		                    	if(selectedPosition== 0){
-		                    		itsClient.disconnectThis();
-		                    	}
-		                    	//if the device is not itself, then updateOtherDeviceStatus
-		                    	else {
-		                    		System.out.println("the device id is " + device_id + " is to be disconnected");
-		                    		itsClient.changeOtherDevice(device_id, DISCONNECTTHIS);
-		                    		itsClient.getOtherDevices();
-								}	
-							}
-		                    hasRefreshed = false;
-		                    //refreshHandler.post(activeRefresh);
-		                    } 
-		                }). setPositiveButton("取消", new DialogInterface.OnClickListener() { 
-		 		                public void onClick(DialogInterface dialog, int which) { 
-		                    } 
-		                }). 
-		                create(); 
-		        alertDialog.show(); 
-		        
-		        */
 		    } 
-		    
 		    });
-	    
-		    
+		/*
+		if(!itsClient.isWebsocketConnected()){
+			itsClient.startWebSocket();
+		} 
+		*/  
 	}
 	
 	
 	
 	protected void onResume(){
 		PublicObjects.setCurrentActivity(2);
+		if(itsClient != null){
+			checkStatus();
+		}
 		super.onResume();  
-		checkStatus();
-		
 	}	
 	
 
