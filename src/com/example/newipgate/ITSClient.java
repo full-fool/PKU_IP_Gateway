@@ -53,6 +53,8 @@ import com.example.newipgate.WebSocketPart.WebSocketException;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
@@ -151,8 +153,11 @@ public class ITSClient extends Service{
 			post.addHeader("Accept-Language", "zh-cn,zh;q=0.8,en-us;q=0.5,en;q=0.3");
 			post.addHeader("Accept-Encoding", "gzip, deflate");
 			post.addHeader("Referer", "https://its.pku.edu.cn/");
-			String username = loginActivity.getUsername();
-			String password = loginActivity.getPassword();
+			
+			SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE); 
+			String username = sharedPre.getString("username", "");		
+			String password = PublicObjects.getPassword();
+			
 			params.add(new BasicNameValuePair("username1", username));
 			params.add(new BasicNameValuePair("password", password));
 			System.out.println("in login, the username is " + username + " and the password is " + password);
@@ -166,8 +171,10 @@ public class ITSClient extends Service{
 			UrlEncodedFormEntity entity = new UrlEncodedFormEntity(params, "UTF-8");	
 			post.setEntity(entity);
 			HttpResponse response = client.execute(post);
-			if(response == null) 
+			if(response == null) {
+				System.out.println("response is null");
 				return -1;
+			}
 			Header newLocation = response.getFirstHeader("Location");
 			response.getEntity().consumeContent();
 			while(newLocation != null)
@@ -349,14 +356,16 @@ public class ITSClient extends Service{
 				int random = Math.abs((new Random()).nextInt() % 1000);
 				String getaddr = "http://its.pku.edu.cn/netportal/PKUIPGW?cmd=close&type=self&fr=0&sid=" + random;
 				String response = cmd(getaddr);
-				login();
 				System.out.println("in disconnect this, the response is " + response);
 				if(response.contains("断开成功")) {
 					PublicObjects.setThisDeviceStatus(1);
 					//mainActivity.ShowInfo("网络断开成功");
 					System.out.println("网络断开成功");
 					updateConnectionStatus();
-				}else{
+				}else if(response.contains("wrong")){
+					System.out.println("wrong password");					
+				}
+				else{
 					//mainActivity.ShowInfo("unknown error");					
 					System.out.println("unknown error");
 				}
@@ -458,6 +467,7 @@ public class ITSClient extends Service{
 	}
 
 	//initiate the websocket connection
+	//此处登录时采用的用户名和密码都是系统里本来存储的，而不是主界面上输入的
 	public void startWebSocket()
 	{
 		if(!websocketConnected){
@@ -475,15 +485,21 @@ public class ITSClient extends Service{
 				url = "ws://162.105.146.140:9000/";
 			}
 			
+
+			SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE); 
+			String socketUsername = sharedPre.getString("username", "");		
+			String socketPassword = sharedPre.getString("password", "");
+			
 			try {
-				MD5password = URLEncoder.encode(md5(loginActivity.getPassword()), "utf-8");
+				MD5password = URLEncoder.encode(md5(socketPassword), "utf-8");
 			} catch (UnsupportedEncodingException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} 
-			System.out.println("in startwebsocket, the user name is " + loginActivity.getUsername() + " password is " + MD5password +
+			
+			System.out.println("in startwebsocket, the user name is " + socketUsername + " password is " + MD5password +
 					" status " + PublicObjects.getThisDeviceStatus());
-			wsc.connect(url + "login?student_id=" + loginActivity.getUsername() + "&password=" + MD5password + "&type=1&status=" + PublicObjects.getThisDeviceStatus(), 
+			wsc.connect(url + "login?student_id=" + socketUsername + "&password=" + MD5password + "&type=1&status=" + PublicObjects.getThisDeviceStatus(), 
 					new WebSocketConnectionHandler(){
 
                     @Override

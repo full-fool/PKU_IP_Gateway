@@ -14,9 +14,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 public class WelcomePage extends Activity {
+	private Encrypt encrypt;
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.welcome_page);
+
 		
 		final ActionBar bar = getActionBar();
 		Drawable actionBarBGDrawable = getResources().getDrawable(R.drawable.actionbarbg); 
@@ -32,6 +34,8 @@ public class WelcomePage extends Activity {
 		SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE); 
 		username = sharedPre.getString("username", "");		
 		String password = sharedPre.getString("password", "");
+		encrypt = new Encrypt(this);
+		PublicObjects.setPassword(encrypt.decrypt(password));
 		
 		if(username != null && !username.equals("") && password != null && !password.equals(""))
 		{

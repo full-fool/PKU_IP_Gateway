@@ -16,6 +16,7 @@ public class PublicObjects {
 	private static final int MAIN_ACTIVITY = 1;
 	private static final int ALL_CONNECTIONS_ACTIVITY = 2;
 	private static int currentActivity = MAIN_ACTIVITY;
+	private static String password = null;
 
 	private static boolean otherDevicesIsInitiated = false;
 
@@ -101,8 +102,13 @@ public class PublicObjects {
 		return infoStr;
 	}
 	
-
+	public static void setPassword(String newPassword){
+		password = newPassword;
+	}
 	
+	public static String getPassword(){
+		return password;
+	}
 	
 	
 	

@@ -117,14 +117,18 @@ public class AllConnections extends Activity{
 	    }
 	};
 	
+	
+	//在绑定完成时连接websoc服务器
 	private ServiceConnection mConn = new ServiceConnection()
 
 	{
 				public void onServiceConnected(ComponentName name,
 						IBinder service) {
 					itsClient=((ITSClient.MyBinder)service).getService();
-					//itsClient.getOtherDevices();
-					
+					if(!itsClient.isWebsocketConnected()){
+						itsClient.startWebSocket(); 
+						checkStatus();
+					}
 				}
 				@Override
 				public void onServiceDisconnected(ComponentName name) {
@@ -176,19 +180,12 @@ public class AllConnections extends Activity{
 				return;
 				
 			}
-			
-			
-			 //ListView listView = (ListView)parent;
-			 //HashMap<String, Object> map = (HashMap<String, Object>) listView.getItemAtPosition(position);
 		     selectedItem = position;
 			 refreMain(position);
 		    } 
 		    });
-		/*
-		if(!itsClient.isWebsocketConnected()){
-			itsClient.startWebSocket();
-		} 
-		*/  
+		
+		
 	}
 	
 	
@@ -270,7 +267,7 @@ public class AllConnections extends Activity{
 	
 	public void disconnectThis(View v){
 		startLoading();
-		if(selectedItem== 0){
+		if(selectedItem == 0){
     		itsClient.disconnectThis();
     	}
     	else {
