@@ -47,8 +47,6 @@ public class WelcomePage extends Activity {
 	    public void handleMessage(Message msg) {
 	        switch (msg.what) {
 	        case 0 :
-				//Toast.makeText(WelcomePage.this, valueString, Toast.LENGTH_LONG).show();
-	        	//AlertDialog.
 	        	new AlertDialog.Builder(WelcomePage.this) 
 			 	.setTitle("有可用的更新"+newVersion)
 			 	.setMessage(description)
@@ -101,9 +99,11 @@ public class WelcomePage extends Activity {
 		username = sharedPre.getString("username", "");		
 		String password = sharedPre.getString("password", "");
 		encrypt = new Encrypt(this);
-		PublicObjects.setPassword(encrypt.decrypt(password));
+		String undecryptedPassword = encrypt.decrypt(password);
+		PublicObjects.setPassword(undecryptedPassword);
+		System.out.println("welcomepage, user is "+username + " and passwd is "+ undecryptedPassword);
 		
-		if(username != null && !username.equals("") && password != null && !password.equals(""))
+		if(username != null && !username.equals("") && undecryptedPassword != null && !undecryptedPassword.equals(""))
 		{
 			System.out.println("change to allconnections activity");
 			PublicObjects.setThisDeviceStatus(5);
@@ -165,7 +165,7 @@ public class WelcomePage extends Activity {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} 
-				if(!newVersion.equals(currentVersion)){
+				if(!newVersion.equals(currentVersion) && !newVersion.equals("")){
 					System.out.println("there is a new version");
 					refreshHandler.sendEmptyMessage(0);	
 				}

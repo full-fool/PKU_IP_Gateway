@@ -94,8 +94,6 @@ public final class R {
         public static final int logo=0x7f0b0013;
         public static final int passwd=0x7f0b0001;
         public static final int remember=0x7f0b0003;
-        public static final int save_userinfo=0x7f0b0016;
-        public static final int update_password_toserver=0x7f0b0017;
         public static final int usname=0x7f0b0000;
     }
     public static final class layout {

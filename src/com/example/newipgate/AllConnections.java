@@ -124,11 +124,13 @@ public class AllConnections extends Activity{
 	{
 				public void onServiceConnected(ComponentName name,
 						IBinder service) {
+					System.out.println("itsclient has been bound to allconnections");
 					itsClient=((ITSClient.MyBinder)service).getService();
 					if(!itsClient.isWebsocketConnected()){
 						itsClient.startWebSocket(); 
-						checkStatus();
 					}
+					checkStatus();
+
 				}
 				@Override
 				public void onServiceDisconnected(ComponentName name) {
@@ -505,10 +507,11 @@ public class AllConnections extends Activity{
 	public boolean onOptionsItemSelected(MenuItem item) {
 		  // Handle presses on the action bar items
 		if(item.getItemId() == R.id.action_update){
-			itsClient.updateOtherDevice();
+				itsClient.updateOtherDevice();			
 		}
 		else if(item.getItemId() == R.id.change_user){
 			LoginActivity.setChangeUser();
+			itsClient.stopWebSowcket();
 			Intent intent = new Intent(AllConnections.this, LoginActivity.class);
 			startActivity(intent);
 			

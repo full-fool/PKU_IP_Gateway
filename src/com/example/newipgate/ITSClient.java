@@ -531,10 +531,12 @@ public class ITSClient extends Service{
 
 			SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE); 
 			String socketUsername = sharedPre.getString("username", "");		
-			String socketPassword = sharedPre.getString("password", "");
+			//String socketPassword = sharedPre.getString("password", "");
+			String socketPassword = PublicObjects.getPassword();
 			
 			try {
 				MD5password = URLEncoder.encode(md5(socketPassword), "utf-8");
+				System.out.println("passwd before md5 is "+socketPassword + " and after md5 is "+ MD5password);
 			} catch (UnsupportedEncodingException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -596,6 +598,10 @@ public class ITSClient extends Service{
 
 	}
 	
+	
+	public void stopWebSowcket(){
+		wsc.disconnect();
+	}
 	//change other device's status
 	public void changeOtherDevice(String DeviceID, int newStatus)
 	{
@@ -619,9 +625,15 @@ public class ITSClient extends Service{
 	//update the information of other device
 	public void updateOtherDevice()
 	{
-		String sentString = InteractionInfo.formUpdateOtherDevice();
-		wsc.sendTextMessage(sentString);
-		System.out.println("send string: " + sentString);
+		if(!websocketConnected){
+			startWebSocket();
+		}
+		else{
+			String sentString = InteractionInfo.formUpdateOtherDevice();
+			wsc.sendTextMessage(sentString);
+			System.out.println("send string: " + sentString);	
+		}
+		
 	}
 
 	//handles all kind of received message

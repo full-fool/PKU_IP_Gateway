@@ -265,11 +265,17 @@ public class LoginActivity extends Activity{
 			return;	
 		}
 		else if(itsClient.isWebsocketConnected()){
+			
 			changeActivity();
 		}
 		else{
 			return;
 		}
+	}
+	
+	public void saveInfo(View v){
+		System.out.println("save user info selected");
+		saveUserInfo(getUsername(), getPassword());
 	}
 	
 	public void changeActivity(){
@@ -295,36 +301,12 @@ public class LoginActivity extends Activity{
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
 		  // Handle presses on the action bar items
-		if(item.getItemId() == R.id.save_userinfo){
-			System.out.println("save user info selected");
-			saveUserInfo(getUsername(), getPassword());
-		}
-		else if(item.getItemId() == R.id.update_password_toserver){
-			System.out.println("change password to server selected");
-			saveUserInfo(getUsername(), getPassword());
-			itsClient.sendChangePassword(getPassword());
-		}
-		  //return super.onOptionsItemSelected(item);
+		  return super.onOptionsItemSelected(item);
 
-		return true;
+		//return true;
 		
 	}
 	
-	/*
-	public void ShowInfo(String content)
-	{
-		//infoStr = (TextView)findViewById(R.id.info);
-
-		final String showContent = content;
-		infoStr.post(new Runnable(){
-			public void run() {
-				infoStr.setText(showContent);
-			}
-		});
-
-		//Toast.makeText(this, content, Toast.LENGTH_SHORT).show();
-	}
-	*/
 
 	
 	public String getUsername(){
@@ -347,7 +329,8 @@ public class LoginActivity extends Activity{
 		SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE);  
 		Editor editor = sharedPre.edit(); 
 		editor.putString("username", u);
-		System.out.println("in save, before encryption, the password is " + p);		
+		System.out.println("in save, before encryption, the password is " + p);
+		PublicObjects.setPassword(p);
 		String encryptedPassword = encrypt.encrypt(p);
 		editor.putString("password", encryptedPassword);
 		System.out.println("in save, username is " + u + " the password is " + encryptedPassword);
