@@ -600,7 +600,9 @@ public class ITSClient extends Service{
 	
 	
 	public void stopWebSowcket(){
-		wsc.disconnect();
+		if(websocketConnected){
+			wsc.disconnect();			
+		}
 	}
 	//change other device's status
 	public void changeOtherDevice(String DeviceID, int newStatus)
