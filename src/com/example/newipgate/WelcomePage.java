@@ -3,6 +3,7 @@ package com.example.newipgate;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.nio.charset.Charset;
 
 import org.apache.http.client.ClientProtocolException;
@@ -13,15 +14,20 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import android.R.string;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -32,13 +38,11 @@ import android.widget.Toast;
 
 public class WelcomePage extends Activity {
 	private Encrypt encrypt;
-	private final String versionCode = "1.01";
+	private final String currentVersion = "1.0";
 	private String responseBody = "";
-
-	
-	
-	
-	
+	private String newVersion = "";
+	private String description = "";
+	private String downloadUrl = "";
 	final private Handler refreshHandler = new Handler(){
 	    public void handleMessage(Message msg) {
 	        switch (msg.what) {
@@ -46,12 +50,24 @@ public class WelcomePage extends Activity {
 				//Toast.makeText(WelcomePage.this, valueString, Toast.LENGTH_LONG).show();
 	        	//AlertDialog.
 	        	new AlertDialog.Builder(WelcomePage.this) 
-			 	.setTitle("版本检查")
-			 	.setMessage(responseBody)
-			 	.setPositiveButton("是", null)
+			 	.setTitle("有可用的更新"+newVersion)
+			 	.setMessage(description)
+			 	.setPositiveButton("是", new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// TODO Auto-generated method stub
+						Uri uri = Uri.parse(downloadUrl);
+						Intent it = new Intent(Intent.ACTION_VIEW, uri);
+						startActivity(it);
+					}
+				})
 			 	.setNegativeButton("否", null)
 			 	.show();
 	            break;
+	        case 1 :
+	        	chooseNextActivity();
+	        	break;
 	        default :
 	            break;
 	        }
@@ -75,9 +91,11 @@ public class WelcomePage extends Activity {
 		PublicObjects.setCurrentActivity(0);
 		PublicObjects.setCurrentWelcomeActivity(WelcomePage.this);
 		
-		checkVersion();
+		checkVersion();		
 		
-		/*
+	}
+	
+	private void chooseNextActivity(){
 		String username = null;
 		SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE); 
 		username = sharedPre.getString("username", "");		
@@ -97,9 +115,6 @@ public class WelcomePage extends Activity {
 			Intent intent = new Intent(WelcomePage.this, LoginActivity.class);
 			startActivity(intent);			
 		}
-		*/
-		
-		
 		
 	}
 	
@@ -116,13 +131,12 @@ public class WelcomePage extends Activity {
 	}
 
 	public void checkVersion(){
-		//itsClient.updateOtherDevice();
 		System.out.println("check version is called");
 		new Thread() {
 			public void run() {
 				 final int REQUEST_TIMEOUT = 2*1000;
 				 final int SO_TIMEOUT = 2*1000; 
-				String getaddr = "http://162.105.146.35:9000/assets/update/android.xml";
+				String getaddr = "http://162.105.146.35:9000/assets/update/android.json";
 				HttpGet get = new HttpGet(getaddr);
 				BasicHttpParams httpParams = new BasicHttpParams();  
 			    HttpConnectionParams.setConnectionTimeout(httpParams, REQUEST_TIMEOUT);  
@@ -138,26 +152,26 @@ public class WelcomePage extends Activity {
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}
-				
-				//System.out.println("the response body is " + responseBody);
-
-			
-					//valueString = Charset.forName("UTF-8").encode(responseBody);
-				//System.out.println(Charset.forName("UTF-8").encode(responseBody));
-				
-				//System.out.println("the response body is " + valueString);
-
-				int index1 = responseBody.indexOf("<version>");
-				int index2 = responseBody.indexOf("</version>");
-				System.out.println(index1 + " " + index2);
-				String newVersionCode = responseBody.substring(index1+9, index2);
-				if(!newVersionCode.equals(versionCode)){
-					System.out.println("new version code is " + newVersionCode);
-					
-				 	
+				}	
+				JSONObject jsonObject = null;
+				try {
+					jsonObject = new JSONObject(responseBody);
+	                newVersion = jsonObject.getString("version");
+	                description=  jsonObject.getString("description");
+	                downloadUrl = jsonObject.getString("url");
+	                
+	                
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
+				if(!newVersion.equals(currentVersion)){
+					System.out.println("there is a new version");
 					refreshHandler.sendEmptyMessage(0);	
-
+				}
+				else{
+					System.out.println("current version is up-to-date");
+					refreshHandler.sendEmptyMessage(1);	
 				}
 			
 				
