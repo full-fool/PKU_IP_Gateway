@@ -66,22 +66,7 @@ public class LoginActivity extends Activity{
 	//private Interaction interaction;
 	
 
-	Handler heartBeatHandler  = new Handler();
-	Runnable sendHeartBeat = new Runnable() {
-		
-		public void run() {
-			if(itsClient.isWebsocketConnected()){
-				itsClient.sendHeartBeat();
-				heartBeatHandler.postDelayed(sendHeartBeat, 300000); 	
-			}
-			else{
-				System.out.println("in send heart beat, the socket is not established");
-				return;
-			}
-			 
-
-		}
-	};
+	
 	
 	
 
@@ -354,10 +339,7 @@ public class LoginActivity extends Activity{
 
 	}
 
-	public void startHeartBeat(){
-		heartBeatHandler.post(sendHeartBeat);
-	}
-
+	
 	
 
 	private void saveUserInfo(String u, String p)
@@ -374,17 +356,6 @@ public class LoginActivity extends Activity{
 				" password is " + sharedPre.getString("password", ""));
 	}
 	
-	
-	public void updatePassword(String newPassword)
-	{
-		SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE);  
-		Editor editor = sharedPre.edit(); 
-		editor.remove("password");
-		String newEncryptedPassword = encrypt.encrypt(newPassword);
-		System.out.println("in update password, new password is "  + newEncryptedPassword);
-		editor.putString("password", newEncryptedPassword);
-		editor.commit();
-	}
 	
 	
 	public void connect(int type)

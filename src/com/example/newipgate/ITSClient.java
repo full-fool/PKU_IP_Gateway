@@ -56,6 +56,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -77,6 +78,48 @@ public class ITSClient extends Service{
 	private final WebSocketConnection wsc = new WebSocketConnection();
 	
 	private boolean websocketConnected = false; 
+	
+	private boolean waitForHeartbeatResponse = false;
+	
+	
+	Handler heartBeatHandler  = new Handler();
+	Runnable sendHeartBeatRunnable = new Runnable() {
+		
+		public void run() {
+			if(websocketConnected){
+				System.out.println("sending heartbeat now");
+				sendHeartBeat();
+				heartBeatHandler.postDelayed(sendHeartBeatRunnable, 300000);
+				//heartBeatHandler.postDelayed(sendHeartBeatRunnable, 10000); 	
+
+			}
+			else{
+				startWebSocket();
+				System.out.println("in send heart beat, the socket is not established");
+				heartBeatHandler.postDelayed(sendHeartBeatRunnable, 300000); 	
+			}
+			 
+
+		}
+	};
+	
+	public void startHeartBeat(){
+		System.out.println("start to send heartbeat");
+		heartBeatHandler.post(sendHeartBeatRunnable);
+	}
+	
+	Handler checkHeartbeatResponseHandler = new Handler();
+	Runnable checkHeartbeatResponse = new Runnable() {
+		
+		@Override
+		public void run() {
+			if(waitForHeartbeatResponse){
+				waitForHeartbeatResponse = false;
+				startWebSocket();
+			}
+		}
+	};
+
 		
 	public void onCreate() {
 		super.onCreate(); 
@@ -134,6 +177,8 @@ public class ITSClient extends Service{
 	public static  void setLoginActivity(LoginActivity thisActivity){
 		loginActivity = thisActivity;
 	}
+	
+
 	
 	
 	
@@ -311,10 +356,6 @@ public class ITSClient extends Service{
 					{
 						System.out.println("连接成功" + "\n未知错误，无法获取连接数");
 					}
-					if(!isWebsocketConnected()){
-						//mainActivity.tryStartWebsocket();	
-						//mainActivity.startHeartBeat();
-					}
 					updateConnectionStatus();
 				}
 				else {
@@ -456,9 +497,10 @@ public class ITSClient extends Service{
 	{
 		if(websocketConnected)
 		{
-			wsc.sendTextMessage(InteractionInfo.formHearBeat());
+			wsc.sendTextMessage(InteractionInfo.formHeartBeat());
 			System.out.println("in itsclient.sendheartbeat, successful send heartbeat");
-
+			waitForHeartbeatResponse = true;
+			checkHeartbeatResponseHandler.postDelayed(checkHeartbeatResponse, 10000);
 		}
 		else{
 			System.out.println("the websocket is not established, so the heartbeat is not sent out");
@@ -478,11 +520,12 @@ public class ITSClient extends Service{
             //int loginResult = login();
             
 			if(hasIPv6() == 1){
-            	url = "ws://[2001:da8:201:1146:b4d9:63cd:133d:63ab]:9000/";
-				//url = "ws://162.105.146.140:9000/";
+            	//url = "ws://[2001:da8:201:1146:2033:44ff:fe55:6677]:9000/";
+				url = "ws://162.105.146.35:9000/";
+
             }
 			else{
-				url = "ws://162.105.146.140:9000/";
+				url = "ws://162.105.146.35:9000/";
 			}
 			
 
@@ -521,8 +564,11 @@ public class ITSClient extends Service{
                     		websocketConnected = true;
                             LoginActivity.setIsTrying2ConnectServer(false);
                             System.out.println("onOpen");
+                            if(PublicObjects.getThisDeviceID() != null && !PublicObjects.getThisDeviceID().equals("")){
+            					wsc.sendTextMessage(InteractionInfo.formAnnulFormerConnection());
+                            }
         					wsc.sendTextMessage(InteractionInfo.formGetOtherDevices());
-        					loginActivity.startHeartBeat();
+        					startHeartBeat();
                     }
 
                     @Override
@@ -586,7 +632,9 @@ public class ITSClient extends Service{
         {
         	PublicObjects.setThisDeviceDeviceID(payload);
         	PublicObjects.setThisDeviceType(1);
-        	loginActivity.changeActivity();
+        	if(PublicObjects.getCurrentActivity() != 2){
+            	loginActivity.changeActivity();        		
+        	}
         }
         else {
         	JSONObject jsonObject = null;
@@ -604,6 +652,17 @@ public class ITSClient extends Service{
 					String connectionString = jsonObject.getString("content");
 					if(connectionString.equals("ok") && PublicObjects.getCurrentActivity() == 2){
 						PublicObjects.getCurrentAllConnections().refresh();
+					}
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			if(infoType == 2){
+				try {
+					String connectionString = jsonObject.getString("content");
+					if(connectionString.equals("ok") ){
+						waitForHeartbeatResponse = false;
 					}
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
@@ -715,8 +774,6 @@ public class ITSClient extends Service{
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}	
-				//System.out.println("after 103");
-				//PublicObjects.printOtherDevices();
 			}
 			
 			//update other device's status
@@ -818,7 +875,7 @@ public class ITSClient extends Service{
 			{
 				try {
 					String newPassword = jsonObject.getString("content");
-					loginActivity.updatePassword(newPassword);
+					welcomeActivity.updatePassword(newPassword);
 						
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
@@ -861,9 +918,4 @@ public class ITSClient extends Service{
 		// TODO Auto-generated method stub
 		return mBinder;
 	}
-	
-	
-
-
-
 }

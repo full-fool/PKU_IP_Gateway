@@ -513,9 +513,7 @@ public class AllConnections extends Activity{
 			startActivity(intent);
 			
 		}
-		
 		  //return super.onOptionsItemSelected(item);
-  
 		return true;
 		
 	}

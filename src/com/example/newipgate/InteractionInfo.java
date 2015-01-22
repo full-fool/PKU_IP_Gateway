@@ -10,6 +10,7 @@ public class InteractionInfo {
 	private final static int CHANGE_OTHER_DEVICES = 4;
 	private final static int UPDATE_OTHER_DEVICES = 6;	
 	private final static int SEND_CHANGE_PASSWORD = 7;
+	private final static int ANNUL_FORMER_CONNECTION = 8;
 
 
 	public static String formGetOtherDevices(){
@@ -71,7 +72,7 @@ public class InteractionInfo {
 		return returnResult;
 	}
 	
-	public static String formHearBeat(){
+	public static String formHeartBeat(){
 		String returnResult=""; 
 		try {
 				JSONObject requestInfo = new JSONObject();
@@ -98,6 +99,16 @@ public class InteractionInfo {
 	}
 	
 	
-	
-
+	public static String formAnnulFormerConnection(){
+		String returnResult=""; 
+		try {
+			JSONObject requestInfo = new JSONObject();
+			requestInfo.put("type", ANNUL_FORMER_CONNECTION);
+			requestInfo.put("content", PublicObjects.getThisDeviceStatus());
+			returnResult = requestInfo.toString();
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		return returnResult;
+	}
 }
