@@ -145,7 +145,6 @@ public class LoginActivity extends Activity{
 				}  
 	};
 	
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);		
@@ -248,8 +247,11 @@ public class LoginActivity extends Activity{
 	
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 	    if (keyCode == KeyEvent.KEYCODE_BACK) {
-	        moveTaskToBack(true);
-	        return true;
+	        //moveTaskToBack(true);
+	        //return true;
+	        Intent intent= new Intent(Intent.ACTION_MAIN); 
+			intent.addCategory(Intent.CATEGORY_HOME);
+			startActivity(intent);
 	    }
 	    return super.onKeyDown(keyCode, event);
 	}
