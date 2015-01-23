@@ -520,8 +520,8 @@ public class ITSClient extends Service{
             //int loginResult = login();
             
 			if(hasIPv6() == 1){
-            	//url = "ws://[2001:da8:201:1146:2033:44ff:fe55:6677]:9000/";
-				url = "ws://162.105.146.35:9000/";
+            	url = "ws://[2001:da8:201:1146:2033:44ff:fe55:6677]:9000/";
+				//url = "ws://162.105.146.35:9000/";
 
             }
 			else{

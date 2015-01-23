@@ -237,7 +237,7 @@ public class AllConnections extends Activity{
 	     customProgressDialog.setMessage("loading...");
 	     customProgressDialog.setCancelable(false);
 	     customProgressDialog.show();
-	     hasStatusChangedHandler.postDelayed(hasStatusChanged, 5000); 
+	     hasStatusChangedHandler.postDelayed(hasStatusChanged, 10000); 
 	}
 	
 	public void connectFree(View v){

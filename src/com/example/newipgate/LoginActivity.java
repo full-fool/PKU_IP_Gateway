@@ -23,6 +23,7 @@ import org.apache.http.params.HttpConnectionParams;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.R.integer;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
@@ -67,6 +68,17 @@ public class LoginActivity extends Activity{
 	//private Interaction interaction;
 	
 
+	final private Handler saveInfoHint = new Handler(){
+	    public void handleMessage(Message msg) {
+	        switch (msg.what) {
+	        case 0 :
+				Toast.makeText(LoginActivity.this, "保存密码成功！", Toast.LENGTH_LONG).show();
+	            break;
+	        default :
+	            break;
+	        }
+	    }
+	};
 	
 	
 	
@@ -339,6 +351,8 @@ public class LoginActivity extends Activity{
 		editor.commit();
 		System.out.println("after commit, username is " + sharedPre.getString("username", "") + 
 				" password is " + sharedPre.getString("password", ""));
+		saveInfoHint.sendEmptyMessage(0);
+		
 	}
 	
 	
