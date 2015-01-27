@@ -100,7 +100,10 @@ public class WelcomePage extends Activity {
 		String password = sharedPre.getString("password", "");
 		encrypt = new Encrypt(this);
 		String undecryptedPassword = encrypt.decrypt(password);
-		PublicObjects.setPassword(undecryptedPassword);
+		PublicObjects.setSavedUsername(username);
+		PublicObjects.setSavedPassword(undecryptedPassword);
+		PublicObjects.setCurrentUsername(username);
+		PublicObjects.setCurrentPassword(undecryptedPassword);
 		System.out.println("welcomepage, user is "+username + " and passwd is "+ undecryptedPassword);
 		
 		if(username != null && !username.equals("") && undecryptedPassword != null && !undecryptedPassword.equals(""))

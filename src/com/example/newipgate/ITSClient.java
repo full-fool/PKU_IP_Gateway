@@ -182,7 +182,7 @@ public class ITSClient extends Service{
 	
 	
 	
-	private int login() {
+	public int login() {
 		HttpPost post = new HttpPost("http://its.pku.edu.cn/cas/login");
 		HttpParams httpparams = new BasicHttpParams();
         httpparams.setParameter("http.protocol.handle-redirects", false);
@@ -200,8 +200,9 @@ public class ITSClient extends Service{
 			post.addHeader("Referer", "https://its.pku.edu.cn/");
 			
 			SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE); 
-			String username = sharedPre.getString("username", "");		
-			String password = PublicObjects.getPassword();
+			//String username = sharedPre.getString("username", "");
+			String username = PublicObjects.getCurrentUsername();
+			String password = PublicObjects.getCurrentPassword();
 			
 			params.add(new BasicNameValuePair("username1", username));
 			params.add(new BasicNameValuePair("password", password));
@@ -517,22 +518,16 @@ public class ITSClient extends Service{
 			System.out.println("in start websocket, the status is disconnect");
             String url = "";
             String MD5password = "";
-            //int loginResult = login();
             
 			if(hasIPv6() == 1){
             	url = "ws://[2001:da8:201:1146:2033:44ff:fe55:6677]:9000/";
-				//url = "ws://162.105.146.35:9000/";
-
             }
 			else{
 				url = "ws://162.105.146.35:9000/";
 			}
 			
-
-			SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE); 
-			String socketUsername = sharedPre.getString("username", "");		
-			//String socketPassword = sharedPre.getString("password", "");
-			String socketPassword = PublicObjects.getPassword();
+			String socketUsername = PublicObjects.getCurrentUsername();
+			String socketPassword = PublicObjects.getCurrentPassword();
 			
 			try {
 				MD5password = URLEncoder.encode(md5(socketPassword), "utf-8");
@@ -885,7 +880,7 @@ public class ITSClient extends Service{
 				}
 			}
 			
-			else if(infoType == 107)
+			else if(infoType == 107)//比较用户是否是当前的用户
 			{
 				try {
 					String newPassword = jsonObject.getString("content");

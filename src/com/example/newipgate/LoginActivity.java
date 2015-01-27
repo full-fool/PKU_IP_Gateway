@@ -65,6 +65,7 @@ public class LoginActivity extends Activity{
 	private CustomProgressDialog customProgressDialog = null;
 	private static boolean changeUser = false;
 	private static boolean isTrying2ConnectServer = false;
+	private int loginStatusCode = -100;
 	//private Interaction interaction;
 	
 
@@ -115,6 +116,25 @@ public class LoginActivity extends Activity{
 			return;
 		}
 	};
+	
+/*
+	Handler loginITsHandler  = new Handler();
+	Runnable loginHint = new Runnable() {
+		
+		public void run() {
+			if(!itsClient.isWebsocketConnected()){
+				//System.out.println("in login hint");
+				if(customProgressDialog != null && customProgressDialog.isShowing()){
+					customProgressDialog.dismiss();
+					Toast.makeText(LoginActivity.this, "未能连接服务器，请稍候再试", Toast.LENGTH_SHORT).show();
+				}
+				//ShowInfo("未能连接服务器，请稍候再试");
+			}
+			return;
+		}
+	};
+	*/
+	
 	
 	public static void setIsTrying2ConnectServer(Boolean isTrying){
 		isTrying2ConnectServer = isTrying;
@@ -198,19 +218,7 @@ public class LoginActivity extends Activity{
 		System.out.println("The stored username is " + username + " and the password is " + password);
 		((EditText)findViewById(R.id.usname)).setText(username);
 		((EditText)findViewById(R.id.passwd)).setText(password);
-		
-		/*
-		if(username != null && !username.equals("") && p != null && !p.equals("") && !changeUser)
-		{
-			PublicObjects.setThisDeviceStatus(5);
-			//checkStatus();
-			//loginServer(getCurrentFocus());
-			AutoLoginHandler.post(AutoLogin);
-		}
-		*/
 
-	
-		
 	}
 	
 	protected void onResume(){
@@ -265,18 +273,22 @@ public class LoginActivity extends Activity{
 
 	
 	public void loginServer(View view){
-		if(PublicObjects.getThisDeviceStatus() == -1){
-			Toast.makeText(LoginActivity.this, "暂未获取此设备联网状态，请稍候再试", Toast.LENGTH_SHORT).show();
-			return;
-		}
-		else if(!itsClient.isWebsocketConnected() && !isTrying2ConnectServer){
+		PublicObjects.setCurrentUsername(getUsername());
+		PublicObjects.setCurrentPassword(getPassword());
+		if(!itsClient.isWebsocketConnected() && !isTrying2ConnectServer){
 			isTrying2ConnectServer = true;
-			//progressDialog = ProgressDialog.show(MainActivity.this, "提示", "正在登录……");
 			customProgressDialog = CustomProgressDialog.createDialog(this);
             customProgressDialog.setMessage("Loading...");
             customProgressDialog.setCancelable(false);
             customProgressDialog.show();
-			itsClient.startWebSocket();
+            /*
+            new Thread(){
+            	public void run(){
+        			loginStatusCode = itsClient.login();
+            	}
+            }.start();
+            */
+            itsClient.startWebSocket();
 			loginHintHandler.postDelayed(loginHint, 7000);
 			return;	
 		}
@@ -326,15 +338,12 @@ public class LoginActivity extends Activity{
 
 	
 	public String getUsername(){
-		return 		((EditText)findViewById(R.id.usname)).getText().toString();
+		return  ((EditText)findViewById(R.id.usname)).getText().toString();
 
 	}
 	
 	public String getPassword(){
-		String returnPassword = ((EditText)findViewById(R.id.passwd)).getText().toString(); 
-		System.out.println("in getpassword, the password is " + returnPassword);
-		return 	returnPassword;
-
+		return  ((EditText)findViewById(R.id.passwd)).getText().toString(); 
 	}
 
 	
@@ -346,11 +355,12 @@ public class LoginActivity extends Activity{
 		Editor editor = sharedPre.edit(); 
 		editor.putString("username", u);
 		System.out.println("in save, before encryption, the password is " + p);
-		PublicObjects.setPassword(p);
 		String encryptedPassword = encrypt.encrypt(p);
 		editor.putString("password", encryptedPassword);
 		System.out.println("in save, username is " + u + " the password is " + encryptedPassword);
 		editor.commit();
+		PublicObjects.setSavedUsername(u);
+		PublicObjects.setSavedPassword(p);
 		System.out.println("after commit, username is " + sharedPre.getString("username", "") + 
 				" password is " + sharedPre.getString("password", ""));
 		saveInfoHint.sendEmptyMessage(0);

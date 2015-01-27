@@ -16,7 +16,10 @@ public class PublicObjects {
 	private static final int MAIN_ACTIVITY = 1;
 	private static final int ALL_CONNECTIONS_ACTIVITY = 2;
 	private static int currentActivity = MAIN_ACTIVITY;
-	private static String password = null;
+	private static String savedUsername = null;
+	private static String currentUsername = null;
+	private static String savedPassword = null;
+	private static String currentPassword = null;
 
 	private static boolean otherDevicesIsInitiated = false;
 
@@ -102,12 +105,36 @@ public class PublicObjects {
 		return infoStr;
 	}
 	
-	public static void setPassword(String newPassword){
-		password = newPassword;
+	public static void setSavedUsername(String newUsername){
+		savedUsername = newUsername;
 	}
 	
-	public static String getPassword(){
-		return password;
+	public static String getSavedUsername(){
+		return savedUsername;
+	}
+	
+	public static void setSavedPassword(String newPassword){
+		savedPassword = newPassword;
+	}
+	
+	public static String getSavedPassword(){
+		return savedPassword;
+	}
+	
+	public static void setCurrentUsername(String newUsername){
+		currentUsername = newUsername;
+	}
+	
+	public static String getCurrentUsername(){
+		return currentUsername;
+	}
+	
+	public static void setCurrentPassword(String newPassword){
+		currentPassword = newPassword;
+	}
+	
+	public static String getCurrentPassword(){
+		return currentPassword;
 	}
 	
 	
