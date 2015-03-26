@@ -20,6 +20,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -59,7 +60,7 @@ public class LoginActivity extends Activity{
 
 	private Encrypt encrypt;
 	private TextView infoStr;
-	private ITSClient itsClient;
+	private ITSClient itsClient = null;
 	private Boolean hasbind = false;
 	//private ProgressDialog progressDialog = null;
 	private CustomProgressDialog customProgressDialog = null;
@@ -117,23 +118,47 @@ public class LoginActivity extends Activity{
 		}
 	};
 	
-/*
-	Handler loginITsHandler  = new Handler();
-	Runnable loginHint = new Runnable() {
-		
+	Handler testNewPasswdHandler  = new Handler();
+	Runnable testNewPasswd = new Runnable() {
 		public void run() {
 			if(!itsClient.isWebsocketConnected()){
-				//System.out.println("in login hint");
-				if(customProgressDialog != null && customProgressDialog.isShowing()){
-					customProgressDialog.dismiss();
-					Toast.makeText(LoginActivity.this, "未能连接服务器，请稍候再试", Toast.LENGTH_SHORT).show();
-				}
-				//ShowInfo("未能连接服务器，请稍候再试");
+				Uri uri = Uri.parse("162.105.146.140:9000/assets/updatepw.html");
+				Intent it = new Intent(Intent.ACTION_VIEW, uri);
+				startActivity(it);
 			}
 			return;
 		}
 	};
-	*/
+	
+
+	Handler loginITSHandler  = new Handler();
+	Runnable loginITS = new Runnable() {
+		
+		public void run() {
+			if(loginStatusCode == 1314){
+				if(customProgressDialog != null && customProgressDialog.isShowing()){
+					customProgressDialog.dismiss();
+				}
+				Toast.makeText(LoginActivity.this, "密码错误", Toast.LENGTH_LONG).show();
+			}
+			else if(loginStatusCode == -1 || loginStatusCode == -2 || loginStatusCode == -100){
+				if(customProgressDialog != null && customProgressDialog.isShowing()){
+					customProgressDialog.dismiss();
+				}
+				Toast.makeText(LoginActivity.this, "未能连接，请检查您的网络连接状态", Toast.LENGTH_SHORT).show();
+			}
+			//此处表示登陆成功，
+			else{
+				//此处用新密码登陆，即输入框里的密码
+				itsClient.startWebSocket();
+				//testNewPasswdHandler.postDelayed(testNewPasswd, 2000);
+				
+
+			}
+			return;
+		}
+	};
+
 	
 	
 	public static void setIsTrying2ConnectServer(Boolean isTrying){
@@ -275,26 +300,23 @@ public class LoginActivity extends Activity{
 	public void loginServer(View view){
 		PublicObjects.setCurrentUsername(getUsername());
 		PublicObjects.setCurrentPassword(getPassword());
-		if(!itsClient.isWebsocketConnected() && !isTrying2ConnectServer){
-			isTrying2ConnectServer = true;
+		if(itsClient != null && !itsClient.isWebsocketConnected() && !isTrying2ConnectServer){
+			//isTrying2ConnectServer = true;
 			customProgressDialog = CustomProgressDialog.createDialog(this);
             customProgressDialog.setMessage("Loading...");
             customProgressDialog.setCancelable(false);
             customProgressDialog.show();
-            /*
+
             new Thread(){
             	public void run(){
         			loginStatusCode = itsClient.login();
             	}
             }.start();
-            */
-            itsClient.startWebSocket();
-			loginHintHandler.postDelayed(loginHint, 7000);
+
+            //itsClient.startWebSocket();
+			//loginHintHandler.postDelayed(loginHint, 2000);
+            loginITSHandler.postDelayed(loginITS, 2000);
 			return;	
-		}
-		else if(itsClient.isWebsocketConnected()){
-			
-			changeActivity();
 		}
 		else{
 			return;

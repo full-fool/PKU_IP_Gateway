@@ -523,7 +523,7 @@ public class ITSClient extends Service{
             	url = "ws://[2001:da8:201:1146:2033:44ff:fe55:6677]:9000/";
             }
 			else{
-				url = "ws://162.105.146.35:9000/";
+				url = "ws://162.105.146.140:9000/";
 			}
 			
 			String socketUsername = PublicObjects.getCurrentUsername();
@@ -858,6 +858,7 @@ public class ITSClient extends Service{
 			{
 				 try {
 						JSONObject requestInfo = new JSONObject();
+						PublicObjects.getCurrentAllConnections().checkStatus();
 						requestInfo.put("type", 1);
 						requestInfo.put("content", PublicObjects.getThisDeviceStatus());
 						wsc.sendTextMessage(requestInfo.toString());

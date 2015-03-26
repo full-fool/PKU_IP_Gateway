@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.newipgate"
     android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionName="1.1" >
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -22,7 +22,8 @@
          <activity
             android:name="com.example.newipgate.WelcomePage"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme" >
+            android:theme="@style/AppTheme" 
+            android:screenOrientation="portrait">
                 <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -34,13 +35,15 @@
             android:name="com.example.newipgate.LoginActivity"
             android:launchMode ="singleInstance"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme" >
+            android:theme="@style/AppTheme"
+            android:screenOrientation="portrait" >
         
         </activity>
          <activity
         android:name="com.example.newipgate.AllConnections"
         android:label="allConnections"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:screenOrientation="portrait">
            
     	</activity>
     <service android:enabled="true" android:name="com.example.newipgate.ITSClient" />

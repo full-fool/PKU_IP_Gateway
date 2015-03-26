@@ -87,7 +87,7 @@ public class AllConnections extends Activity{
 
 	private Adapter adapter;
 	int selectedOperation = 0; 
-	private ITSClient itsClient;
+	private ITSClient itsClient = null;
 
 
 	private ArrayList<HashMap<String, Object>> items=new ArrayList<HashMap<String, Object>>();
@@ -118,7 +118,7 @@ public class AllConnections extends Activity{
 	};
 	
 	
-	//在绑定完成时连接websoc服务器
+	//在绑定完成时连接websocket服务器
 	private ServiceConnection mConn = new ServiceConnection()
 
 	{
@@ -191,11 +191,14 @@ public class AllConnections extends Activity{
 	}
 	
 	
-	
+	//判断是否已经连上websocket服务器使用的是isWebsoketConnected函数
 	protected void onResume(){
 		PublicObjects.setCurrentActivity(2);
 		if(itsClient != null){
 			checkStatus();
+			if(!itsClient.isWebsocketConnected()){
+				itsClient.startWebSocket();
+			}
 		}
 		super.onResume();  
 	}	

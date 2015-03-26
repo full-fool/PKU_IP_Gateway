@@ -26,6 +26,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -38,11 +39,12 @@ import android.widget.Toast;
 
 public class WelcomePage extends Activity {
 	private Encrypt encrypt;
-	private final String currentVersion = "1.0";
+	//private final String currentVersion = "1.0";
 	private String responseBody = "";
 	private String newVersion = "";
 	private String description = "";
 	private String downloadUrl = "";
+	private String currentVersion = "";
 	final private Handler refreshHandler = new Handler(){
 	    public void handleMessage(Message msg) {
 	        switch (msg.what) {
@@ -84,8 +86,16 @@ public class WelcomePage extends Activity {
 		bar.setDisplayShowHomeEnabled(false);
 		bar.setTitle("北大北门@PKU");
 		
-		
-		
+		String pkName = this.getPackageName();
+		try {
+			String versionName = this.getPackageManager().getPackageInfo(
+						pkName, 0).versionName;
+			currentVersion = versionName;
+			System.out.println("currentVersion is " + currentVersion);
+		} catch (NameNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		PublicObjects.setCurrentActivity(0);
 		PublicObjects.setCurrentWelcomeActivity(WelcomePage.this);
 		
@@ -139,7 +149,7 @@ public class WelcomePage extends Activity {
 			public void run() {
 				 final int REQUEST_TIMEOUT = 2*1000;
 				 final int SO_TIMEOUT = 2*1000; 
-				String getaddr = "http://162.105.146.35:9000/assets/update/android.json";
+				String getaddr = "http://162.105.146.140:9000/assets/update/android.json";
 				HttpGet get = new HttpGet(getaddr);
 				BasicHttpParams httpParams = new BasicHttpParams();  
 			    HttpConnectionParams.setConnectionTimeout(httpParams, REQUEST_TIMEOUT);  
@@ -156,6 +166,8 @@ public class WelcomePage extends Activity {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}	
+				System.out.println("in checkversion, the response body is" + responseBody);
+				
 				JSONObject jsonObject = null;
 				try {
 					jsonObject = new JSONObject(responseBody);
@@ -168,6 +180,7 @@ public class WelcomePage extends Activity {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} 
+				System.out.println("in checkversion, current version is " + currentVersion);
 				if(!newVersion.equals(currentVersion) && !newVersion.equals("")){
 					System.out.println("there is a new version");
 					refreshHandler.sendEmptyMessage(0);	
