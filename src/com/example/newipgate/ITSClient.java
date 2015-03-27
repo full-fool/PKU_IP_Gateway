@@ -58,6 +58,7 @@ import android.content.SharedPreferences.Editor;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 
 
@@ -80,6 +81,16 @@ public class ITSClient extends Service{
 	private boolean websocketConnected = false; 
 	
 	private boolean waitForHeartbeatResponse = false;
+
+	private final int CHANGE_OTHER_DEVICE_STATUS = 4;
+	private final int CHANGE_PASSWORD = 7;
+	private final int HEART_BEAT = 2;
+	private final int REFRESH_OTHER_DEVICES_STATUS = 6;
+	private final int REQUEST_OTHER_DEVICES_RECOVER = 5;
+	private final int GET_DEVICES_LIST = 3;
+	private final int UPDATE_SELF_STATUS = 1;
+
+
 	
 	
 	Handler heartBeatHandler  = new Handler();
@@ -122,6 +133,13 @@ public class ITSClient extends Service{
 				startWebSocket();
 			}
 		}
+	};
+
+
+	final private Handler timeOutHandler = new Handler(){
+	    public void handleMessage(Message msg) {
+	       	PublicObjects.getCurrentAllConnections().stopCurrentActionTypeWithServer(msg.what);
+	    }
 	};
 
 		
@@ -330,30 +348,32 @@ public class ITSClient extends Service{
 				}
 				String response = cmd(getaddr);
 				if(response.contains("wrong password")){
-					//mainActivity.ShowInfo("密码错误");
+					PublicObjects.getCurrentAllConnections().showInfo(4);
 					System.out.println("密码错误");
 				}
 				else if(response.contains("重新输入")) {
-					//mainActivity.ShowInfo("重新输入");
+					PublicObjects.getCurrentAllConnections().showInfo(6);
 					System.out.println("重新输入");
 
 				} else if(response.contains("达到设定值")) {
-					//mainActivity.ShowInfo("当前连接超过预定值");
+					PublicObjects.getCurrentAllConnections().showInfo(5);
 					System.out.println("当前连接超过预定值");
 				} else if(response.contains("不在申请访问服务的范围内")) {
-					//mainActivity.ShowInfo("不在申请访问服务的范围内");
+					PublicObjects.getCurrentAllConnections().showInfo(6);
 					System.out.println("不在申请访问服务的范围内");
 				} else if(response.contains("ipgw_open_Failed")) {
-					//mainActivity.ShowInfo("ipgw_open_Failed");
+					PublicObjects.getCurrentAllConnections().showInfo(6);
 					System.out.println("ipgw_open_Failed");
 				} else if(response.contains("连接成功"))
 				{
 					String [] resultStrings = response.split(">[012]个<", 0);
 					if(ConnectType == 2){
 						PublicObjects.setThisDeviceStatus(4);
-
+						PublicObjects.getCurrentAllConnections().showInfo(1);
 					}else {
 						PublicObjects.setThisDeviceStatus(3);
+						PublicObjects.getCurrentAllConnections().showInfo(0);
+
 					}
 					
 					if(resultStrings.length > 0)
@@ -387,13 +407,13 @@ public class ITSClient extends Service{
 				//System.out.println("in disconnect all, the response is " + response);
 				if(response.contains("断开成功") || response.contains("断开全部连接成功")) {
 					PublicObjects.setThisDeviceStatus(2);
-					//mainActivity.ShowInfo("断开全部连接成功");
+					PublicObjects.getCurrentAllConnections().showInfo(3);
 					System.out.println("断开全部连接成功");
 					updateConnectionStatus();
 					PublicObjects.setAllOtherDeviceStatus(1);
 					
 				}else{
-					//mainActivity.ShowInfo("unknown error");					
+					PublicObjects.getCurrentAllConnections().showInfo(6);
 					System.out.println("unknown error");
 				}
 			}
@@ -412,14 +432,15 @@ public class ITSClient extends Service{
 				//System.out.println("in disconnect this, the response is " + response);
 				if(response.contains("断开成功")) {
 					PublicObjects.setThisDeviceStatus(1);
-					//mainActivity.ShowInfo("网络断开成功");
+					PublicObjects.getCurrentAllConnections().showInfo(2);
 					System.out.println("网络断开成功");
 					updateConnectionStatus();
 				}else if(response.contains("wrong")){
+					PublicObjects.getCurrentAllConnections().showInfo(4);
 					System.out.println("wrong password");					
 				}
 				else{
-					//mainActivity.ShowInfo("unknown error");					
+					PublicObjects.getCurrentAllConnections().showInfo(6);
 					System.out.println("unknown error");
 				}
 			}
@@ -495,9 +516,14 @@ public class ITSClient extends Service{
 	
 	public void updateConnectionStatus(){
 		if(websocketConnected){ 
-			String sentString = InteractionInfo.formUpdateConnectionStatus();
-			wsc.sendTextMessage(sentString);
-			System.out.println("in update connection status, the sent string is " + sentString);
+			if(PublicObjects.getCurrentAllConnections().getCurrentActionTypeWithServer(UPDATE_SELF_STATUS) == -1){
+				String sentString = InteractionInfo.formUpdateConnectionStatus();
+				PublicObjects.getCurrentAllConnections().setCurrentActionTypeWithServer(UPDATE_SELF_STATUS);
+				wsc.sendTextMessage(sentString);
+				timeOutHandler.sendEmptyMessageDelayed(UPDATE_SELF_STATUS, 2000);
+				System.out.println("in update connection status, the sent string is " + sentString);
+			}
+			
 		}
 		else{
 			System.out.println("in updateconnectionstatus, the websocket is already closed");
@@ -509,10 +535,10 @@ public class ITSClient extends Service{
 	{
 		if(websocketConnected)
 		{
-			wsc.sendTextMessage(InteractionInfo.formHeartBeat());
-			System.out.println("in itsclient.sendheartbeat, successful send heartbeat");
-			waitForHeartbeatResponse = true;
-			checkHeartbeatResponseHandler.postDelayed(checkHeartbeatResponse, 10000);
+				wsc.sendTextMessage(InteractionInfo.formHeartBeat());
+				System.out.println("in itsclient.sendheartbeat, successful send heartbeat");
+				waitForHeartbeatResponse = true;
+				checkHeartbeatResponseHandler.postDelayed(checkHeartbeatResponse, 10000);		
 		}
 		else{
 			System.out.println("the websocket is not established, so the heartbeat is not sent out");
@@ -573,9 +599,11 @@ public class ITSClient extends Service{
                             LoginActivity.setIsTrying2ConnectServer(false);
                             System.out.println("onOpen");
                             if(PublicObjects.getThisDeviceID() != null && !PublicObjects.getThisDeviceID().equals("")){
-            					wsc.sendTextMessage(InteractionInfo.formAnnulFormerConnection());
+            					//PublicObjects.getCurrentAllConnections().setActionTypeWithServer();
+            					//此处这一行为暂时慢点实行
+            					//wsc.sendTextMessage(InteractionInfo.formAnnulFormerConnection());
                             }
-        					wsc.sendTextMessage(InteractionInfo.formGetOtherDevices());
+                            getOtherDevices();
         					startHeartBeat();
                     }
 
@@ -613,21 +641,34 @@ public class ITSClient extends Service{
 	//change other device's status
 	public void changeOtherDevice(String DeviceID, int newStatus)
 	{
-		System.out.println("in change other devices, the device id is " + DeviceID + " and new status is " + newStatus);
-		String sentString = InteractionInfo.formChangeOtherDevice(DeviceID, newStatus);
-		wsc.sendTextMessage(sentString);
-		System.out.println("in change other devices, the sent string is " + sentString);
+		if(PublicObjects.getCurrentAllConnections().getCurrentActionTypeWithServer(CHANGE_OTHER_DEVICE_STATUS) == -1){
+			System.out.println("in change other devices, the device id is " + DeviceID + " and new status is " + newStatus);
+			String sentString = InteractionInfo.formChangeOtherDevice(DeviceID, newStatus);
+			PublicObjects.getCurrentAllConnections().setCurrentActionTypeWithServer(CHANGE_OTHER_DEVICE_STATUS);
+			wsc.sendTextMessage(sentString);
+			timeOutHandler.sendEmptyMessageDelayed(CHANGE_OTHER_DEVICE_STATUS, 2000);
+			System.out.println("in change other devices, the sent string is " + sentString);			
+		}
+
 	}
 	
 	public void getOtherDevices(){
-		wsc.sendTextMessage(InteractionInfo.formGetOtherDevices());
+		if(PublicObjects.getCurrentAllConnections().getCurrentActionTypeWithServer(GET_DEVICES_LIST) == -1){
+			PublicObjects.getCurrentAllConnections().setCurrentActionTypeWithServer(GET_DEVICES_LIST);
+			wsc.sendTextMessage(InteractionInfo.formGetOtherDevices());
+			timeOutHandler.sendEmptyMessageDelayed(GET_DEVICES_LIST, 2000);			
+		}
+
 	}
 	
 	
 	//change the password
 	public void sendChangePassword(String newPassword)
 	{
+		
+		PublicObjects.getCurrentAllConnections().setCurrentActionTypeWithServer(CHANGE_PASSWORD);
 		wsc.sendTextMessage(InteractionInfo.formSendChangePassword(newPassword));
+		timeOutHandler.sendEmptyMessageDelayed(CHANGE_PASSWORD, 2000);
 	}
 
 	//update the information of other device
@@ -637,9 +678,14 @@ public class ITSClient extends Service{
 			startWebSocket();
 		}
 		else{
-			String sentString = InteractionInfo.formUpdateOtherDevice();
-			wsc.sendTextMessage(sentString);
-			System.out.println("send string: " + sentString);	
+			if(PublicObjects.getCurrentAllConnections().getCurrentActionTypeWithServer(REFRESH_OTHER_DEVICES_STATUS) == -1){
+				String sentString = InteractionInfo.formUpdateOtherDevice();
+				PublicObjects.getCurrentAllConnections().setCurrentActionTypeWithServer(REFRESH_OTHER_DEVICES_STATUS);
+				wsc.sendTextMessage(sentString);
+				timeOutHandler.sendEmptyMessageDelayed(REFRESH_OTHER_DEVICES_STATUS, 2000);
+				System.out.println("send string: " + sentString);					
+			}
+
 		}
 		
 	}
@@ -672,6 +718,9 @@ public class ITSClient extends Service{
 					String connectionString = jsonObject.getString("content");
 					if(connectionString.equals("ok") && PublicObjects.getCurrentActivity() == 2){
 						PublicObjects.getCurrentAllConnections().refresh();
+						if(PublicObjects.getCurrentAllConnections().getCurrentActionTypeWithServer(UPDATE_SELF_STATUS) == 1){
+							PublicObjects.getCurrentAllConnections().stopCurrentActionTypeWithServer(UPDATE_SELF_STATUS);
+						}
 					}
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
@@ -712,6 +761,9 @@ public class ITSClient extends Service{
 						
 					}
 					PublicObjects.otherDeviceNum = contents.length();
+					if(PublicObjects.getCurrentAllConnections().getCurrentActionTypeWithServer(GET_DEVICES_LIST) == 1){
+							PublicObjects.getCurrentAllConnections().stopCurrentActionTypeWithServer(GET_DEVICES_LIST);
+					}
 					
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
@@ -903,6 +955,22 @@ public class ITSClient extends Service{
 					e.printStackTrace();
 				}
 			}
+			else if(infoType == 6)
+			{
+				String connectionString;
+				try {
+					connectionString = jsonObject.getString("content");
+					System.out.println("in type 6, the content is " + connectionString);
+					//PublicObjects.getCurrentAllConnections().showInfo(connectionString);
+					if(PublicObjects.getCurrentAllConnections().getCurrentActionTypeWithServer(REFRESH_OTHER_DEVICES_STATUS) == 1){
+							PublicObjects.getCurrentAllConnections().stopCurrentActionTypeWithServer(REFRESH_OTHER_DEVICES_STATUS);
+						}
+					
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 			else if(infoType == 4)
 			{
 				
@@ -911,6 +979,9 @@ public class ITSClient extends Service{
 					connectionString = jsonObject.getString("content");
 					System.out.println("in type 4, the content is " + connectionString);
 					//PublicObjects.getCurrentAllConnections().showInfo(connectionString);
+					if(PublicObjects.getCurrentAllConnections().getCurrentActionTypeWithServer(CHANGE_OTHER_DEVICE_STATUS) == 1){
+							PublicObjects.getCurrentAllConnections().stopCurrentActionTypeWithServer(CHANGE_OTHER_DEVICE_STATUS);
+						}
 					
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block

@@ -2,3 +2,18 @@
 2. 因为wecomeActivity是入口AT，所以很多事情，比如获取资源是和这个AT绑定的，因此也要有getCurrentWelcomePage和setCurrentWelcomePage
 3. allConnections的onResume函数中会调用chechStatus函数，因此每次进入这个AT都会异步检查网络状态。另外，如果检查发现没有连上websocket服务器，则会在此建立连接。
 4. allConnections在onCreate是会与ITSClient服务建立绑定，一旦绑定完成，回调函数中会调用startWebSocket。一旦失去绑定，iteClient会置空。
+5. DefaultHttpClient的execute方法是(同步)的
+6. 在线程中调用Toast等UI方法可以使用handler，然后发送sendEmptyMessage方法。
+7. 为每个行为设立一个标志位，每个行为有一个超时。通过sendEmptyMessageDelayed(int what, long delayMillis)方法处理超时。回调函数收到信息时，看当前信息对应的行为是否有效，如有效就处理，如果无效就直接丢弃。
+8. sendMessage时会调用timeouthandler的方法有updateconnectionstatus(1),changeotherdevice(4),getotherdevice(3),updateotherdevice(6),
+
+
+
+
+暂时搁浅的事情
+1. 更改密码页面
+2. startWebSocket函数中的onOpen中的放弃之前链接这一行为。
+3. 收到信息时的处理还没有做
+4. type=3的信息收到时为什么不刷新界面
+5. 收到反馈信息时的UI更新都没有做，需要判断返回的是否ok
+

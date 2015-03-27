@@ -159,7 +159,11 @@ public class LoginActivity extends Activity{
 		}
 	};
 
-	
+
+////	public static void showInfo(String content){
+////		Toast.makeText(LoginActivity.this, content, Toast.LENGTH_SHORT).show();
+////	}
+//	
 	
 	public static void setIsTrying2ConnectServer(Boolean isTrying){
 		isTrying2ConnectServer = isTrying;

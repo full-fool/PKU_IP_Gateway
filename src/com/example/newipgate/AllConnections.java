@@ -76,15 +76,16 @@ public class AllConnections extends Activity{
 	private final int DISCONNECTALL = 2;
 	private final int ANDROID = 1;
 	private final int IPHONE = 2;
+
+
 	private boolean hasRefreshed = false;
 	private boolean isBusy = false;
 	private int selectedItem = 0;
 	//private ProgressDialog progressDialog = null;
 	private CustomProgressDialog customProgressDialog = null;
 
-
-
-
+	//此结构用来存储当前AT与服务器交互的操作类型，每种操作最多发送一次，多余的阻塞。
+	private int[] currentActionTypeWithServer = new int[8];
 	private Adapter adapter;
 	int selectedOperation = 0; 
 	private ITSClient itsClient = null;
@@ -104,7 +105,7 @@ public class AllConnections extends Activity{
 		}
 	};
 	
-	
+	//这个handler存在仅仅是为了更新UI，因为会被子线程调用，所以必须使用handler来异步调用
 	final private Handler refreshHandler = new Handler(){
 	    public void handleMessage(Message msg) {
 	        switch (msg.what) {
@@ -116,6 +117,44 @@ public class AllConnections extends Activity{
 	        }
 	    }
 	};
+
+
+	final private Handler showInfoHanlder = new Handler(){
+	    public void handleMessage(Message msg) {
+
+	    	if(customProgressDialog != null && customProgressDialog.isShowing()){
+				customProgressDialog.dismiss();
+			}
+	        switch (msg.what) {
+	        //0:连接免费网址成功，1：连接收费网址成功，2：断开本机成功，3：断开所有成功, 4:密码错误
+	        // 5: 超出预定值
+	        case 0 :
+				Toast.makeText(AllConnections.this, "成功连接免费网址", Toast.LENGTH_SHORT).show();
+	            break;
+	        case 1:
+				Toast.makeText(AllConnections.this, "成功连接收费网址", Toast.LENGTH_SHORT).show();
+				break;
+			case 2:
+				Toast.makeText(AllConnections.this, "成功断开本机连接", Toast.LENGTH_SHORT).show();
+				break;
+			case 3:
+				Toast.makeText(AllConnections.this, "成功断开所有连接", Toast.LENGTH_SHORT).show();
+				break;
+			case 4:
+				Toast.makeText(AllConnections.this, "密码错误", Toast.LENGTH_SHORT).show();
+				break;
+			case 5:
+				Toast.makeText(AllConnections.this, "当前连接数超过预定值", Toast.LENGTH_SHORT).show();
+				break;
+	        default :
+				Toast.makeText(AllConnections.this, "连接错误", Toast.LENGTH_SHORT).show();
+	            break;
+	        }
+	    }
+	};
+
+
+
 	
 	
 	//在绑定完成时连接websocket服务器
@@ -143,6 +182,11 @@ public class AllConnections extends Activity{
 		setContentView(R.layout.control);
 		System.out.println("allConnections onCreate");
 		
+		for(int i=0; i<8; i++){
+			currentActionTypeWithServer[i] = -1;
+		}
+
+
 		PublicObjects.setCurrentActivity(2);
 		PublicObjects.setCurrentAllconnections(AllConnections.this);
 		
@@ -224,9 +268,12 @@ public class AllConnections extends Activity{
 	    }  
 	  
 	
-	public void showInfo(String content){
-		Toast.makeText(this, content, Toast.LENGTH_SHORT).show();
-
+	public void showInfo(int infoType){
+		//只有在当前界面是AllConnections时才显示相关提示信息
+		if(PublicObjects.getCurrentActivity() != 2){
+			return;
+		}
+		showInfoHanlder.sendEmptyMessage(infoType);
 	}
 	
 	
@@ -290,6 +337,19 @@ public class AllConnections extends Activity{
 		itsClient.disconnectAll();	
 	}
 	
+	public void setCurrentActionTypeWithServer(int actionType){
+		currentActionTypeWithServer[actionType] = 1;
+	}
+
+	public void stopCurrentActionTypeWithServer(int actionType){
+		currentActionTypeWithServer[actionType] = -1;
+	}
+
+	public int getCurrentActionTypeWithServer(int actionType){
+		return currentActionTypeWithServer[actionType];
+	}
+
+
 	//此函数用来更新UI,所有的数据来源都是本地已存的信息，在publicObjects中
 	public void refresh(){
 		//PublicObjects.printOtherDevices();
