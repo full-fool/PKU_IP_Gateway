@@ -122,7 +122,7 @@ public class LoginActivity extends Activity{
 	Runnable testNewPasswd = new Runnable() {
 		public void run() {
 			if(!itsClient.isWebsocketConnected()){
-				Uri uri = Uri.parse("162.105.146.140:9000/assets/updatepw.html");
+				Uri uri = Uri.parse("162.105.146.35:9000/assets/updatepw.html");
 				Intent it = new Intent(Intent.ACTION_VIEW, uri);
 				startActivity(it);
 			}

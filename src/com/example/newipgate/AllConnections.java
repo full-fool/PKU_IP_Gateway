@@ -99,7 +99,7 @@ public class AllConnections extends Activity{
 		public void run() {
 			if(customProgressDialog != null && customProgressDialog.isShowing()){
 				customProgressDialog.dismiss();
-				Toast.makeText(AllConnections.this, "更改状态失败，请稍后再试", Toast.LENGTH_SHORT).show();
+				//Toast.makeText(AllConnections.this, "更改状态失败，请稍后再试", Toast.LENGTH_SHORT).show();
 			}
 		}
 	};
@@ -143,6 +143,9 @@ public class AllConnections extends Activity{
 		setContentView(R.layout.control);
 		System.out.println("allConnections onCreate");
 		
+		PublicObjects.setCurrentActivity(2);
+		PublicObjects.setCurrentAllconnections(AllConnections.this);
+		
 		//set up actionbar 
 		final ActionBar bar = getActionBar();
 		Drawable actionBarBGDrawable = getResources().getDrawable(R.drawable.actionbarbg); 
@@ -152,10 +155,7 @@ public class AllConnections extends Activity{
 		
 		//bind the itsclient service
 		Intent intent = new Intent(this,ITSClient.class);
-		PublicObjects.setCurrentActivity(2);
-		PublicObjects.setCurrentAllconnections(AllConnections.this);
 		bindService(intent, mConn, Context.BIND_AUTO_CREATE);
-		
 		System.out.println("after the binding of the itsclient service");
 		
 		//set up the overflow menubar 
@@ -172,7 +172,8 @@ public class AllConnections extends Activity{
 
 		refresh();		
 		
-		//things happen after the user click on one of these items 
+		//things happen after the user click on one of these items
+		//lv是右边的listview
 		lv.setOnItemClickListener(new AdapterView.OnItemClickListener(){
 			public void onItemClick(AdapterView<?> parent, View view,
 			  int position, long id) {
@@ -183,7 +184,7 @@ public class AllConnections extends Activity{
 				
 			}
 		     selectedItem = position;
-			 refreMain(position);
+			 refreshMain(position);
 		    } 
 		    });
 		
@@ -245,7 +246,7 @@ public class AllConnections extends Activity{
 	
 	public void connectFree(View v){
 		startLoading();
-		if(selectedItem== 0){
+		if(selectedItem == 0){
     		itsClient.connect(1);
     	}
     	else {
@@ -258,7 +259,7 @@ public class AllConnections extends Activity{
 	
 	public void connectCharge(View v){
 		startLoading();
-		if(selectedItem== 0){
+		if(selectedItem == 0){
     		itsClient.connect(2);
     	}
     	else {
@@ -289,6 +290,7 @@ public class AllConnections extends Activity{
 		itsClient.disconnectAll();	
 	}
 	
+	//此函数用来更新UI,所有的数据来源都是本地已存的信息，在publicObjects中
 	public void refresh(){
 		//PublicObjects.printOtherDevices();
 		if(customProgressDialog != null && customProgressDialog.isShowing()){
@@ -333,11 +335,12 @@ public class AllConnections extends Activity{
 		for (int i=0; i<PublicObjects.otherDeviceNum; i++) {
 			
 			HashMap<String, Object> newMap = new HashMap<String, Object>();
-			if(PublicObjects.otherDevices[i].type == IPHONE)
-			{
-				newMap.put("icon", getResources().getDrawable(R.drawable.iphone));
-			}
-			else {
+			//此处有修改，将第一个iphone的判断去掉了
+			// if(PublicObjects.otherDevices[i].type == IPHONE)
+			// {
+			// 	newMap.put("icon", getResources().getDrawable(R.drawable.iphone));
+			// }
+			// else 
 				if(PublicObjects.otherDevices[i].status == DISCONNECTTHIS || PublicObjects.otherDevices[i].status == DISCONNECTALL
 						|| PublicObjects.otherDevices[i].status == 5){
 					switch(PublicObjects.otherDevices[i].type){ 
@@ -361,7 +364,7 @@ public class AllConnections extends Activity{
 					default:newMap.put("icon", getResources().getDrawable(R.drawable.pc));
 					}
 				}
-			}
+			
 			
 			newMap.put("device_id", PublicObjects.otherDevices[i].device_id);
 			if(PublicObjects.otherDevices[i].status == DISCONNECTTHIS || PublicObjects.otherDevices[i].status == DISCONNECTALL)
@@ -404,10 +407,11 @@ public class AllConnections extends Activity{
 				"icon"}, new int[] { R.id.icon});
 		lv = (ListView)findViewById(R.id.listview);
 		lv.setAdapter(adapter);
-		refreMain(selectedItem);
+		refreshMain(selectedItem);
 	}
 	
-	public void refreMain(int position){
+	//此函数用来刷新allconnections界面中的中间大界面。
+	public void refreshMain(int position){
 		ImageView bigIcon = (ImageView)findViewById(R.id.bigicon);
 		TextView statusText = (TextView)findViewById(R.id.connectionState);
 		//TextView deviceIdText = (TextView)findViewById(R.id.deviceID);
@@ -514,7 +518,7 @@ public class AllConnections extends Activity{
 		}
 		else if(item.getItemId() == R.id.change_user){
 			LoginActivity.setChangeUser();
-			itsClient.stopWebSowcket();
+			itsClient.stopWebSocket();
 			Intent intent = new Intent(AllConnections.this, LoginActivity.class);
 			startActivity(intent);
 			

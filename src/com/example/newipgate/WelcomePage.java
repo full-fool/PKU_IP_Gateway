@@ -45,6 +45,8 @@ public class WelcomePage extends Activity {
 	private String description = "";
 	private String downloadUrl = "";
 	private String currentVersion = "";
+	
+	//此handler用来处理有更新的情况，一旦有更新跳转到下载界面，否则选择下一个界面
 	final private Handler refreshHandler = new Handler(){
 	    public void handleMessage(Message msg) {
 	        switch (msg.what) {
@@ -78,7 +80,7 @@ public class WelcomePage extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.welcome_page);
 		
-		
+		//设置actionBar样式
 		final ActionBar bar = getActionBar();
 		Drawable actionBarBGDrawable = getResources().getDrawable(R.drawable.actionbarbg); 
 		bar.setBackgroundDrawable(actionBarBGDrawable);
@@ -86,6 +88,7 @@ public class WelcomePage extends Activity {
 		bar.setDisplayShowHomeEnabled(false);
 		bar.setTitle("北大北门@PKU");
 		
+		//获取本地版本号
 		String pkName = this.getPackageName();
 		try {
 			String versionName = this.getPackageManager().getPackageInfo(
@@ -96,6 +99,8 @@ public class WelcomePage extends Activity {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		
 		PublicObjects.setCurrentActivity(0);
 		PublicObjects.setCurrentWelcomeActivity(WelcomePage.this);
 		
@@ -119,6 +124,7 @@ public class WelcomePage extends Activity {
 		if(username != null && !username.equals("") && undecryptedPassword != null && !undecryptedPassword.equals(""))
 		{
 			System.out.println("change to allconnections activity");
+			//如果已有保存的密码，则直接进入全部连接界面，并且设置当前网络状态为未知（因为还没有检查网络状况）
 			PublicObjects.setThisDeviceStatus(5);
 			Intent intent = new Intent(WelcomePage.this, AllConnections.class);
 			startActivity(intent);
@@ -143,13 +149,14 @@ public class WelcomePage extends Activity {
 		editor.commit();
 	}
 
+	//checkVersion通过连接服务器某个网址来获取相关版本信息，获取之后来决定是否安装更新
 	public void checkVersion(){
 		System.out.println("check version is called");
 		new Thread() {
 			public void run() {
 				 final int REQUEST_TIMEOUT = 2*1000;
 				 final int SO_TIMEOUT = 2*1000; 
-				String getaddr = "http://162.105.146.140:9000/assets/update/android.json";
+				String getaddr = "http://162.105.146.35:9000/assets/update/android.json";
 				HttpGet get = new HttpGet(getaddr);
 				BasicHttpParams httpParams = new BasicHttpParams();  
 			    HttpConnectionParams.setConnectionTimeout(httpParams, REQUEST_TIMEOUT);  

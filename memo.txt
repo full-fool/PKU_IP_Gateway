@@ -1,0 +1,4 @@
+1. PublicObjects.java中的方法：getCurrentActivity获取当前activity,0表示欢迎界面，1表示loginactivity,2表示all_connections_page。保存当前Activity是很重要的，因为很多行为执行与否和当前的Activity有关
+2. 因为wecomeActivity是入口AT，所以很多事情，比如获取资源是和这个AT绑定的，因此也要有getCurrentWelcomePage和setCurrentWelcomePage
+3. allConnections的onResume函数中会调用chechStatus函数，因此每次进入这个AT都会异步检查网络状态。另外，如果检查发现没有连上websocket服务器，则会在此建立连接。
+4. allConnections在onCreate是会与ITSClient服务建立绑定，一旦绑定完成，回调函数中会调用startWebSocket。一旦失去绑定，iteClient会置空。

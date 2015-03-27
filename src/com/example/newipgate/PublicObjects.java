@@ -13,9 +13,14 @@ public class PublicObjects {
 	public static WelcomePage currentWelcomePageActivity;
 	public static LoginActivity currentLoginActivity;
 	public static AllConnections currentAllConnections;
-	private static final int MAIN_ACTIVITY = 1;
+	private static final int LOGIN_ACTIVITY = 1;
 	private static final int ALL_CONNECTIONS_ACTIVITY = 2;
-	private static int currentActivity = MAIN_ACTIVITY;
+	private static final int DISCONNECTED = 1;
+	private static final int CONNECT_FREE = 3;
+	private static final int CONNECT_CHARGE = 4;
+	private static final int UNKNOWN = 5;
+
+	private static int currentActivity = LOGIN_ACTIVITY;
 	private static String savedUsername = null;
 	private static String currentUsername = null;
 	private static String savedPassword = null;

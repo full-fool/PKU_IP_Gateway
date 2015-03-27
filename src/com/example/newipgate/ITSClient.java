@@ -115,6 +115,10 @@ public class ITSClient extends Service{
 		public void run() {
 			if(waitForHeartbeatResponse){
 				waitForHeartbeatResponse = false;
+				if(websocketConnected)
+				{
+					stopWebSocket();
+				}
 				startWebSocket();
 			}
 		}
@@ -125,6 +129,7 @@ public class ITSClient extends Service{
 		super.onCreate(); 
 		welcomeActivity = PublicObjects.getCurrentWelcomeActivity();
 		
+		//此处开启https通信机制，并使用本地密钥库
 		InputStream ins = welcomeActivity.getResources().openRawResource(R.raw.ca);
 		CertificateFactory cerFactory;
 		try {
@@ -223,10 +228,14 @@ public class ITSClient extends Service{
 			}
 			Header newLocation = response.getFirstHeader("Location");
 			response.getEntity().consumeContent();
+
+			//这个while循环用来判断是否密码错误
 			while(newLocation != null)
 			{
 				String newLocationUrl = newLocation.getValue();
 				System.out.println("the redirect url is " + newLocationUrl);
+				
+				//e=3 means the password is wrong
 				if(newLocationUrl.contains("e=3"))
 					return 1314;
 				HttpGet get = new HttpGet(newLocationUrl);
@@ -357,10 +366,12 @@ public class ITSClient extends Service{
 					{
 						System.out.println("连接成功" + "\n未知错误，无法获取连接数");
 					}
+
+
 					updateConnectionStatus();
 				}
 				else {
-					System.out.println("未知错误, the response is ");
+					System.out.println("未知错误, the response is " + response);
 				}
 			}
 		}.start();
@@ -373,7 +384,7 @@ public class ITSClient extends Service{
 				int random = Math.abs((new Random()).nextInt() % 1000);
 				String getaddr = "http://its.pku.edu.cn/netportal/PKUIPGW?cmd=close&type=allconn&fr=0&sid" + random;
 				String response = cmd(getaddr);
-				System.out.println("in disconnect all, the response is " + response);
+				//System.out.println("in disconnect all, the response is " + response);
 				if(response.contains("断开成功") || response.contains("断开全部连接成功")) {
 					PublicObjects.setThisDeviceStatus(2);
 					//mainActivity.ShowInfo("断开全部连接成功");
@@ -398,7 +409,7 @@ public class ITSClient extends Service{
 				int random = Math.abs((new Random()).nextInt() % 1000);
 				String getaddr = "http://its.pku.edu.cn/netportal/PKUIPGW?cmd=close&type=self&fr=0&sid=" + random;
 				String response = cmd(getaddr);
-				System.out.println("in disconnect this, the response is " + response);
+				//System.out.println("in disconnect this, the response is " + response);
 				if(response.contains("断开成功")) {
 					PublicObjects.setThisDeviceStatus(1);
 					//mainActivity.ShowInfo("网络断开成功");
@@ -523,7 +534,7 @@ public class ITSClient extends Service{
             	url = "ws://[2001:da8:201:1146:2033:44ff:fe55:6677]:9000/";
             }
 			else{
-				url = "ws://162.105.146.140:9000/";
+				url = "ws://162.105.146.35:9000/";
 			}
 			
 			String socketUsername = PublicObjects.getCurrentUsername();
@@ -594,7 +605,7 @@ public class ITSClient extends Service{
 	}
 	
 	
-	public void stopWebSowcket(){
+	public void stopWebSocket(){
 		if(websocketConnected){
 			wsc.disconnect();			
 		}
