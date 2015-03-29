@@ -6,6 +6,7 @@
 6. 在线程中调用Toast等UI方法可以使用handler，然后发送sendEmptyMessage方法。
 7. 为每个行为设立一个标志位，每个行为有一个超时。通过sendEmptyMessageDelayed(int what, long delayMillis)方法处理超时。回调函数收到信息时，看当前信息对应的行为是否有效，如有效就处理，如果无效就直接丢弃。
 8. sendMessage时会调用timeouthandler的方法有updateconnectionstatus(1),changeotherdevice(4),getotherdevice(3),updateotherdevice(6),
+9. 设备会在以下几种情况更新UI：1. 自身更新状况并且得到its服务器反馈时 2. 收到服务器新增设备消息时 3. 收到服务器删除设备时 4.收到服务器更新其他设备网络状态时
 
 
 
@@ -16,4 +17,8 @@
 3. 收到信息时的处理还没有做
 4. type=3的信息收到时为什么不刷新界面
 5. 收到反馈信息时的UI更新都没有做，需要判断返回的是否ok
-
+6. 跳转至allconnection AT的条件。（如果预存账号和密码的情况已经测试，现在还差手动登陆的情况）
+6. 问题：发送 更改其他设备网络状态 这一信息时，服务器并没有更是否收到信息的反馈。
+7. 在连接上服务器是给出连接成功的提示
+8. 目前没发现ChangeActivity方法有什么用
+9. 手动登录时也要直接进入界面，而不是等待连接服务器

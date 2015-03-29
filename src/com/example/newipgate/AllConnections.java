@@ -118,8 +118,8 @@ public class AllConnections extends Activity{
 	    }
 	};
 
-
-	final private Handler showInfoHanlder = new Handler(){
+	//显示信息的时候已经关掉了loading
+	final private Handler showInfoHandler = new Handler(){
 	    public void handleMessage(Message msg) {
 
 	    	if(customProgressDialog != null && customProgressDialog.isShowing()){
@@ -273,7 +273,7 @@ public class AllConnections extends Activity{
 		if(PublicObjects.getCurrentActivity() != 2){
 			return;
 		}
-		showInfoHanlder.sendEmptyMessage(infoType);
+		showInfoHandler.sendEmptyMessage(infoType);
 	}
 	
 	

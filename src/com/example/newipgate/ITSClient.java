@@ -60,6 +60,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 
 
 
@@ -139,8 +140,20 @@ public class ITSClient extends Service{
 	final private Handler timeOutHandler = new Handler(){
 	    public void handleMessage(Message msg) {
 	       	PublicObjects.getCurrentAllConnections().stopCurrentActionTypeWithServer(msg.what);
+			if(PublicObjects.getCurrentActivity() == 2){
+				//Toast.makeText(PublicObjects.getCurrentAllConnections(), "网络状况不佳，请稍后再试", Toast.LENGTH_SHORT).show();
+			}
+
 	    }
 	};
+
+	//这个handler只用来处理本设备网络更改收到its反馈时的情况。因为与its交互的过程在一个线程中实现，因此必须使用handler
+	final private Handler refreshUIHandler = new Handler(){
+	    public void handleMessage(Message msg) {
+		PublicObjects.getCurrentAllConnections().refresh();
+	    }
+	};
+
 
 		
 	public void onCreate() {
@@ -370,9 +383,16 @@ public class ITSClient extends Service{
 					if(ConnectType == 2){
 						PublicObjects.setThisDeviceStatus(4);
 						PublicObjects.getCurrentAllConnections().showInfo(1);
+						//PublicObjects.getCurrentAllConnections().refresh();
+						refreshUIHandler.sendEmptyMessage(0);
+
 					}else {
 						PublicObjects.setThisDeviceStatus(3);
 						PublicObjects.getCurrentAllConnections().showInfo(0);
+						//PublicObjects.getCurrentAllConnections().refresh();
+						refreshUIHandler.sendEmptyMessage(0);
+
+
 
 					}
 					
@@ -411,6 +431,10 @@ public class ITSClient extends Service{
 					System.out.println("断开全部连接成功");
 					updateConnectionStatus();
 					PublicObjects.setAllOtherDeviceStatus(1);
+					//PublicObjects.getCurrentAllConnections().refresh();
+					refreshUIHandler.sendEmptyMessage(0);
+
+
 					
 				}else{
 					PublicObjects.getCurrentAllConnections().showInfo(6);
@@ -433,6 +457,10 @@ public class ITSClient extends Service{
 				if(response.contains("断开成功")) {
 					PublicObjects.setThisDeviceStatus(1);
 					PublicObjects.getCurrentAllConnections().showInfo(2);
+					//PublicObjects.getCurrentAllConnections().refresh();
+					refreshUIHandler.sendEmptyMessage(0);
+
+
 					System.out.println("网络断开成功");
 					updateConnectionStatus();
 				}else if(response.contains("wrong")){
@@ -589,20 +617,25 @@ public class ITSClient extends Service{
                             System.out.println("onClose code = " + code + " reason=" + reason);
                             System.out.println("the websocketConnected is set to false");
                             websocketConnected = false;
-                            LoginActivity.setIsTrying2ConnectServer(false);
+                            //LoginActivity.setIsTrying2ConnectServer(false);
                     }
 
                     @Override
                     public void onOpen() {
                     		System.out.println("the websocketConnected is set to true");
                     		websocketConnected = true;
-                            LoginActivity.setIsTrying2ConnectServer(false);
+                            //LoginActivity.setIsTrying2ConnectServer(false);
                             System.out.println("onOpen");
                             if(PublicObjects.getThisDeviceID() != null && !PublicObjects.getThisDeviceID().equals("")){
-            					//PublicObjects.getCurrentAllConnections().setActionTypeWithServer();
             					//此处这一行为暂时慢点实行
-            					//wsc.sendTextMessage(InteractionInfo.formAnnulFormerConnection());
+                            	String sentText = InteractionInfo.formAnnulFormerConnection();
+            					wsc.sendTextMessage(sentText);
+            					System.out.println("annul former connection, sent string is " + sentText);
+
+                            }else{
+                            	System.out.println("no former connection!");
                             }
+                            
                             getOtherDevices();
         					startHeartBeat();
                     }
@@ -717,7 +750,8 @@ public class ITSClient extends Service{
 				try {
 					String connectionString = jsonObject.getString("content");
 					if(connectionString.equals("ok") && PublicObjects.getCurrentActivity() == 2){
-						PublicObjects.getCurrentAllConnections().refresh();
+						
+						//PublicObjects.getCurrentAllConnections().refresh();
 						if(PublicObjects.getCurrentAllConnections().getCurrentActionTypeWithServer(UPDATE_SELF_STATUS) == 1){
 							PublicObjects.getCurrentAllConnections().stopCurrentActionTypeWithServer(UPDATE_SELF_STATUS);
 						}
@@ -987,6 +1021,10 @@ public class ITSClient extends Service{
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				if(PublicObjects.getCurrentActivity() == 2){
+						PublicObjects.getCurrentAllConnections().refresh();
+				}
+					
 				
 			}
             

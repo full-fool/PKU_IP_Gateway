@@ -84,7 +84,7 @@ public class LoginActivity extends Activity{
 	
 	
 	
-
+	//如果已经绑定itsclient，此处就
 	Handler AutoLoginHandler  = new Handler();
 	Runnable AutoLogin = new Runnable() {
 		
@@ -101,7 +101,7 @@ public class LoginActivity extends Activity{
 		}
 	};
 	
-
+	//暂时没用
 	Handler loginHintHandler  = new Handler();
 	Runnable loginHint = new Runnable() {
 		
@@ -117,7 +117,8 @@ public class LoginActivity extends Activity{
 			return;
 		}
 	};
-	
+
+	//暂时没用
 	Handler testNewPasswdHandler  = new Handler();
 	Runnable testNewPasswd = new Runnable() {
 		public void run() {
@@ -130,7 +131,7 @@ public class LoginActivity extends Activity{
 		}
 	};
 	
-
+	//这个handler用来处理之前连接its的剩余问题,如果its端认证成功，就连接websocket服务器
 	Handler loginITSHandler  = new Handler();
 	Runnable loginITS = new Runnable() {
 		
@@ -151,9 +152,8 @@ public class LoginActivity extends Activity{
 			else{
 				//此处用新密码登陆，即输入框里的密码
 				itsClient.startWebSocket();
+				changeActivity();
 				//testNewPasswdHandler.postDelayed(testNewPasswd, 2000);
-				
-
 			}
 			return;
 		}
@@ -211,8 +211,8 @@ public class LoginActivity extends Activity{
 		PublicObjects.setCurrentLoginActivity(LoginActivity.this);
 		PublicObjects.setThisDeviceStatus(5);
 		
-		//check the connection status
-		System.out.println("mainactivity oncreate");
+		System.out.println("loginActivity oncreate");
+
 		Intent intent = new Intent(this,ITSClient.class);
 		bindService(intent, mConn, Context.BIND_AUTO_CREATE); 
 		ITSClient.setLoginActivity(LoginActivity.this);
@@ -252,12 +252,13 @@ public class LoginActivity extends Activity{
 	
 	protected void onResume(){
 		
-		
 		PublicObjects.setCurrentActivity(1);
 		System.out.println("login activity onResume");
 		super.onResume();
 		SharedPreferences sharedPre = this.getSharedPreferences("config", MODE_PRIVATE); 
 		String p = sharedPre.getString("password", "");
+
+		//此处设置自动登录
 		if(username != null && !username.equals("") && p != null && !p.equals("") && !changeUser)
 		{
 			PublicObjects.setThisDeviceStatus(5);
@@ -300,7 +301,7 @@ public class LoginActivity extends Activity{
 	    }  
 	  
 
-	
+	//此函数用来连接与服务器建立连接，先与its认证，通过之后再发送连接服务器
 	public void loginServer(View view){
 		PublicObjects.setCurrentUsername(getUsername());
 		PublicObjects.setCurrentPassword(getPassword());
@@ -337,6 +338,7 @@ public class LoginActivity extends Activity{
 		if(customProgressDialog != null && customProgressDialog.isShowing()){
 			customProgressDialog.dismiss();
 		}
+		System.out.println("!!!!!!!!!!!!!changeActivity called!!!!!!!!!!!");
 		//用来处理连接路由器时一台设备断开了，另外的设备都会断开。
 		itsClient.updateConnectionStatus();
 		changeUser = false;

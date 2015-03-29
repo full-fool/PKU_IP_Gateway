@@ -100,11 +100,14 @@ public class InteractionInfo {
 	
 	
 	public static String formAnnulFormerConnection(){
+		if(PublicObjects.getThisDeviceID() == null){
+			return "no former connect";
+		}
 		String returnResult=""; 
 		try {
 			JSONObject requestInfo = new JSONObject();
 			requestInfo.put("type", ANNUL_FORMER_CONNECTION);
-			requestInfo.put("content", PublicObjects.getThisDeviceStatus());
+			requestInfo.put("content", PublicObjects.getThisDeviceID());
 			returnResult = requestInfo.toString();
 			} catch (JSONException e) {
 				e.printStackTrace();
