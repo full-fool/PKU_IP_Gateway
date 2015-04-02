@@ -16,7 +16,7 @@
 	    android:layout_width="150dip"
 		android:layout_height="150dip" 
 		android:layout_gravity="center"
-		android:layout_marginTop="40dp"
+		android:layout_marginTop="20dp"
 		/>
 	
 	<TextView android:id="@+id/connectionState" 
@@ -78,13 +78,30 @@
      android:visibility="visible"
      android:onClick="disconnectAll"
       android:layout_width="200dip"
-     android:layout_height="40dip"     
+     android:layout_height="40dip"  
+
+        
      android:textSize="13sp"
      android:background="@drawable/loginbutton"
      android:layout_gravity="center_horizontal"
      android:textColor="#ffffff"
      />
    
+     <Button
+     android:id="@+id/add_downloadtask"
+     android:text="发起下载任务" 
+     android:visibility="visible"
+     android:onClick="addDownloadTask"
+      android:layout_width="200dip"
+     android:layout_height="40dip"  
+	android:layout_marginTop="-40dp"
+        
+     android:textSize="13sp"
+     android:background="@drawable/loginbutton"
+     android:layout_gravity="center_horizontal"
+     android:textColor="#ffffff"
+     />
+     
 	</LinearLayout>
 	
     <LinearLayout

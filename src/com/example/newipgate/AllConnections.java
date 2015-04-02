@@ -47,6 +47,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -337,6 +338,31 @@ public class AllConnections extends Activity{
 		itsClient.disconnectAll();	
 	}
 	
+	public void addDownloadTask(View v){
+		 LayoutInflater factory = LayoutInflater.from(this); 
+	        final View textEntryView = factory.inflate(R.layout.add_downloadtask, null); 
+	        final EditText downloadUrlEditText = (EditText) textEntryView.findViewById(R.id.downloadUrl); 
+	        final EditText fileNameEditText = (EditText)textEntryView.findViewById(R.id.fileName); 
+	        AlertDialog.Builder ad1 = new AlertDialog.Builder(AllConnections.this); 
+	        ad1.setTitle("发起下载任务"); 
+	        ad1.setIcon(android.R.drawable.ic_dialog_info); 
+	        ad1.setView(textEntryView); 
+	        ad1.setPositiveButton("确定", new DialogInterface.OnClickListener() { 
+	            public void onClick(DialogInterface dialog, int i) { 
+	            	String downloadUrl = downloadUrlEditText.getText().toString();
+	            	String fileName = fileNameEditText.getText().toString();
+					String targetDeviceId = PublicObjects.otherDevices[selectedItem -1].device_id;
+					System.out.println("the task info\n" + downloadUrl + "\n" + fileName + "\n" + targetDeviceId);
+	            } 
+	        }); 
+	        ad1.setNegativeButton("取消", new DialogInterface.OnClickListener() { 
+	            public void onClick(DialogInterface dialog, int i) { 
+	   
+	            } 
+	        }); 
+	        ad1.show();
+	}
+	
 	public void setCurrentActionTypeWithServer(int actionType){
 		currentActionTypeWithServer[actionType] = 1;
 	}
@@ -479,14 +505,23 @@ public class AllConnections extends Activity{
 		statusText.setText(tempHashMap.get("status").toString());
 		//deviceIdText.setText(tempHashMap.get("device_id").toString());
 		bigIcon.setImageDrawable((Drawable)tempHashMap.get("icon"));
+		
+		//设置“断开所有连接”的显示
 		Button disconnectAllButton = (Button)findViewById(R.id.disconnect_all);
+		Button addDownloadTaskButton = (Button)findViewById(R.id.add_downloadtask);
+		
 		if(position == 0){
 			disconnectAllButton.setVisibility(View.VISIBLE);
+			addDownloadTaskButton.setVisibility(View.GONE);
 		}
 		else{
 			disconnectAllButton.setVisibility(View.GONE);
+			if(PublicObjects.otherDevices[position -1].type >= 4){
+				addDownloadTaskButton.setVisibility(View.VISIBLE);
+			}
 		}
-		
+
+
 	}
 	public void resetSelectedItem(){
 		selectedItem = 0;

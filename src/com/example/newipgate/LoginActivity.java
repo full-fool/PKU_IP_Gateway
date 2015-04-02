@@ -312,16 +312,20 @@ public class LoginActivity extends Activity{
             customProgressDialog.setCancelable(false);
             customProgressDialog.show();
 
+            //此处新建线程是因为主线程中不能运行网络相关操作
             new Thread(){
             	public void run(){
         			loginStatusCode = itsClient.login();
             	}
             }.start();
+            loginITSHandler.postDelayed(loginITS, 2000);
+			return;	
+
+
 
             //itsClient.startWebSocket();
 			//loginHintHandler.postDelayed(loginHint, 2000);
-            loginITSHandler.postDelayed(loginITS, 2000);
-			return;	
+
 		}
 		else{
 			return;
