@@ -341,11 +341,11 @@ public class AllConnections extends Activity{
 	public void addDownloadTask(View v){
 		 LayoutInflater factory = LayoutInflater.from(this); 
 	        final View textEntryView = factory.inflate(R.layout.add_downloadtask, null); 
-	        final EditText downloadUrlEditText = (EditText) textEntryView.findViewById(R.id.downloadUrl); 
-	        final EditText fileNameEditText = (EditText)textEntryView.findViewById(R.id.fileName); 
+	        final EditText downloadUrlEditText = (EditText) textEntryView.findViewById(R.id.download_link); 
+	        final EditText fileNameEditText = (EditText)textEntryView.findViewById(R.id.file_name); 
 	        AlertDialog.Builder ad1 = new AlertDialog.Builder(AllConnections.this); 
 	        ad1.setTitle("发起下载任务"); 
-	        ad1.setIcon(android.R.drawable.ic_dialog_info); 
+	        ad1.setIcon(R.drawable.download_dialog); 
 	        ad1.setView(textEntryView); 
 	        ad1.setPositiveButton("确定", new DialogInterface.OnClickListener() { 
 	            public void onClick(DialogInterface dialog, int i) { 
@@ -353,6 +353,9 @@ public class AllConnections extends Activity{
 	            	String fileName = fileNameEditText.getText().toString();
 					String targetDeviceId = PublicObjects.otherDevices[selectedItem -1].device_id;
 					System.out.println("the task info\n" + downloadUrl + "\n" + fileName + "\n" + targetDeviceId);
+					//在此处写入将要和服务器的交互
+					
+					
 	            } 
 	        }); 
 	        ad1.setNegativeButton("取消", new DialogInterface.OnClickListener() { 
@@ -513,6 +516,9 @@ public class AllConnections extends Activity{
 		if(position == 0){
 			disconnectAllButton.setVisibility(View.VISIBLE);
 			addDownloadTaskButton.setVisibility(View.GONE);
+			//for debug
+			//disconnectAllButton.setVisibility(View.VISIBLE);
+			//addDownloadTaskButton.setVisibility(View.VISIBLE);
 		}
 		else{
 			disconnectAllButton.setVisibility(View.GONE);
