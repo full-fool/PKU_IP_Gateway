@@ -90,6 +90,7 @@ public class ITSClient extends Service{
 	private final int REQUEST_OTHER_DEVICES_RECOVER = 5;
 	private final int GET_DEVICES_LIST = 3;
 	private final int UPDATE_SELF_STATUS = 1;
+	private final int ADD_DOWNLOAD_TASK = 9;
 
 
 	
@@ -150,7 +151,12 @@ public class ITSClient extends Service{
 	//这个handler只用来处理本设备网络更改收到its反馈时的情况。因为与its交互的过程在一个线程中实现，因此必须使用handler
 	final private Handler refreshUIHandler = new Handler(){
 	    public void handleMessage(Message msg) {
-		PublicObjects.getCurrentAllConnections().refresh();
+			//只是要更新一下UI
+			if (msg.what == 0){
+				PublicObjects.getCurrentAllConnections().refresh();
+			}
+
+
 	    }
 	};
 
@@ -361,34 +367,34 @@ public class ITSClient extends Service{
 				}
 				String response = cmd(getaddr);
 				if(response.contains("wrong password")){
-					PublicObjects.getCurrentAllConnections().showInfo(4);
+					PublicObjects.getCurrentAllConnections().showInfo(4, null);
 					System.out.println("密码错误");
 				}
 				else if(response.contains("重新输入")) {
-					PublicObjects.getCurrentAllConnections().showInfo(6);
+					PublicObjects.getCurrentAllConnections().showInfo(6, null);
 					System.out.println("重新输入");
 
 				} else if(response.contains("达到设定值")) {
-					PublicObjects.getCurrentAllConnections().showInfo(5);
+					PublicObjects.getCurrentAllConnections().showInfo(5, null);
 					System.out.println("当前连接超过预定值");
 				} else if(response.contains("不在申请访问服务的范围内")) {
-					PublicObjects.getCurrentAllConnections().showInfo(6);
+					PublicObjects.getCurrentAllConnections().showInfo(6, null);
 					System.out.println("不在申请访问服务的范围内");
 				} else if(response.contains("ipgw_open_Failed")) {
-					PublicObjects.getCurrentAllConnections().showInfo(6);
+					PublicObjects.getCurrentAllConnections().showInfo(6, null);
 					System.out.println("ipgw_open_Failed");
 				} else if(response.contains("连接成功"))
 				{
 					String [] resultStrings = response.split(">[012]个<", 0);
 					if(ConnectType == 2){
 						PublicObjects.setThisDeviceStatus(4);
-						PublicObjects.getCurrentAllConnections().showInfo(1);
+						PublicObjects.getCurrentAllConnections().showInfo(1, null);
 						//PublicObjects.getCurrentAllConnections().refresh();
 						refreshUIHandler.sendEmptyMessage(0);
 
 					}else {
 						PublicObjects.setThisDeviceStatus(3);
-						PublicObjects.getCurrentAllConnections().showInfo(0);
+						PublicObjects.getCurrentAllConnections().showInfo(0, null);
 						//PublicObjects.getCurrentAllConnections().refresh();
 						refreshUIHandler.sendEmptyMessage(0);
 
@@ -427,7 +433,7 @@ public class ITSClient extends Service{
 				//System.out.println("in disconnect all, the response is " + response);
 				if(response.contains("断开成功") || response.contains("断开全部连接成功")) {
 					PublicObjects.setThisDeviceStatus(2);
-					PublicObjects.getCurrentAllConnections().showInfo(3);
+					PublicObjects.getCurrentAllConnections().showInfo(3, null);
 					System.out.println("断开全部连接成功");
 					updateConnectionStatus();
 					PublicObjects.setAllOtherDeviceStatus(1);
@@ -437,7 +443,7 @@ public class ITSClient extends Service{
 
 					
 				}else{
-					PublicObjects.getCurrentAllConnections().showInfo(6);
+					PublicObjects.getCurrentAllConnections().showInfo(6, null);
 					System.out.println("unknown error");
 				}
 			}
@@ -456,7 +462,7 @@ public class ITSClient extends Service{
 				//System.out.println("in disconnect this, the response is " + response);
 				if(response.contains("断开成功")) {
 					PublicObjects.setThisDeviceStatus(1);
-					PublicObjects.getCurrentAllConnections().showInfo(2);
+					PublicObjects.getCurrentAllConnections().showInfo(2, null);
 					//PublicObjects.getCurrentAllConnections().refresh();
 					refreshUIHandler.sendEmptyMessage(0);
 
@@ -464,11 +470,11 @@ public class ITSClient extends Service{
 					System.out.println("网络断开成功");
 					updateConnectionStatus();
 				}else if(response.contains("wrong")){
-					PublicObjects.getCurrentAllConnections().showInfo(4);
+					PublicObjects.getCurrentAllConnections().showInfo(4, null);
 					System.out.println("wrong password");					
 				}
 				else{
-					PublicObjects.getCurrentAllConnections().showInfo(6);
+					PublicObjects.getCurrentAllConnections().showInfo(6, null);
 					System.out.println("unknown error");
 				}
 			}
@@ -723,6 +729,14 @@ public class ITSClient extends Service{
 		
 	}
 
+	public void addDownloadTask(String targetDeviceId, String downloadUrl, String fileName){
+		if(PublicObjects.getCurrentAllConnections().getCurrentActionTypeWithServer(ADD_DOWNLOAD_TASK) == -1){
+			PublicObjects.getCurrentAllConnections().setCurrentActionTypeWithServer(ADD_DOWNLOAD_TASK);
+			wsc.sendTextMessage(InteractionInfo.formAddDownloadTask(targetDeviceId, downloadUrl, fileName));
+			timeOutHandler.sendEmptyMessageDelayed(ADD_DOWNLOAD_TASK, 2000);			
+		}
+	}
+	
 	//handles all kind of received message
 	private void handleReceivedMessage(String payload)
 	{
@@ -987,6 +1001,23 @@ public class ITSClient extends Service{
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+				}
+			}
+			
+			else if (infoType == 108)
+			{
+				try {
+				String connectionString = jsonObject.getString("content");
+				String taskName = jsonObject.getString("file_name");
+					if(connectionString.equals("ok") ){
+						PublicObjects.getCurrentAllConnections().showInfo(7, taskName);
+					}
+					else{
+						PublicObjects.getCurrentAllConnections().showInfo(8, taskName);
+					}
+				} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 				}
 			}
 			else if(infoType == 6)

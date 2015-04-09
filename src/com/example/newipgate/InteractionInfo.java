@@ -11,6 +11,7 @@ public class InteractionInfo {
 	private final static int UPDATE_OTHER_DEVICES = 6;	
 	private final static int SEND_CHANGE_PASSWORD = 7;
 	private final static int ANNUL_FORMER_CONNECTION = 8;
+	private final static int ADD_DOWNLOAD_TASK = 9;
 
 
 	public static String formGetOtherDevices(){
@@ -113,5 +114,24 @@ public class InteractionInfo {
 				e.printStackTrace();
 			}
 		return returnResult;
+	}
+
+	public static String formAddDownloadTask(String DeviceID, String url, String fileName){
+		String returnResult = "";
+		try{
+			JSONObject requestInfo = new JSONObject();
+			requestInfo.put("type", ADD_DOWNLOAD_TASK);
+			JSONObject downloadInfo = new JSONObject();
+			downloadInfo.put("device_id", DeviceID);
+			downloadInfo.put("url", url);
+			downloadInfo.put("name", fileName);
+
+			requestInfo.put("content", downloadInfo.toString());
+			returnResult = requestInfo.toString();
+		} catch(JSONException e){
+			e.printStackTrace();
+		}
+		return returnResult;
+
 	}
 }

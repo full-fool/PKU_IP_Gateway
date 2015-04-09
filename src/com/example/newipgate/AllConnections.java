@@ -91,6 +91,9 @@ public class AllConnections extends Activity{
 	int selectedOperation = 0; 
 	private ITSClient itsClient = null;
 
+	//用来在输出提示信息时存储临时参数，例如下载文件名
+	private String optionArg = "";
+
 
 	private ArrayList<HashMap<String, Object>> items=new ArrayList<HashMap<String, Object>>();
 	
@@ -147,8 +150,13 @@ public class AllConnections extends Activity{
 			case 5:
 				Toast.makeText(AllConnections.this, "当前连接数超过预定值", Toast.LENGTH_SHORT).show();
 				break;
-	        default :
+			case 6:
 				Toast.makeText(AllConnections.this, "连接错误", Toast.LENGTH_SHORT).show();
+			case 7:
+				Toast.makeText(AllConnections.this, optionArg + "下载成功", Toast.LENGTH_SHORT).show();
+			case 8:
+				Toast.makeText(AllConnections.this, optionArg + "下载失败", Toast.LENGTH_SHORT).show();
+	        default :
 	            break;
 	        }
 	    }
@@ -269,11 +277,12 @@ public class AllConnections extends Activity{
 	    }  
 	  
 	
-	public void showInfo(int infoType){
+	public void showInfo(int infoType, String optionalArg){
 		//只有在当前界面是AllConnections时才显示相关提示信息
 		if(PublicObjects.getCurrentActivity() != 2){
 			return;
 		}
+		optionArg = optionalArg;
 		showInfoHandler.sendEmptyMessage(infoType);
 	}
 	
@@ -354,6 +363,8 @@ public class AllConnections extends Activity{
 					String targetDeviceId = PublicObjects.otherDevices[selectedItem -1].device_id;
 					System.out.println("the task info\n" + downloadUrl + "\n" + fileName + "\n" + targetDeviceId);
 					//在此处写入将要和服务器的交互
+					itsClient.addDownloadTask(targetDeviceId, downloadUrl, fileName);
+					
 					
 					
 	            } 
@@ -615,7 +626,8 @@ public class AllConnections extends Activity{
 	public boolean onOptionsItemSelected(MenuItem item) {
 		  // Handle presses on the action bar items
 		if(item.getItemId() == R.id.action_update){
-				itsClient.updateOtherDevice();			
+				itsClient.updateOtherDevice();
+				itsClient.getOtherDevices();		
 		}
 		else if(item.getItemId() == R.id.change_user){
 			LoginActivity.setChangeUser();
