@@ -732,6 +732,7 @@ public class ITSClient extends Service{
 	public void addDownloadTask(String targetDeviceId, String downloadUrl, String fileName){
 		if(PublicObjects.getCurrentAllConnections().getCurrentActionTypeWithServer(ADD_DOWNLOAD_TASK) == -1){
 			PublicObjects.getCurrentAllConnections().setCurrentActionTypeWithServer(ADD_DOWNLOAD_TASK);
+			System.out.println("the sent string for download is " + InteractionInfo.formAddDownloadTask(targetDeviceId, downloadUrl, fileName));
 			wsc.sendTextMessage(InteractionInfo.formAddDownloadTask(targetDeviceId, downloadUrl, fileName));
 			timeOutHandler.sendEmptyMessageDelayed(ADD_DOWNLOAD_TASK, 2000);			
 		}

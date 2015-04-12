@@ -86,7 +86,7 @@ public class AllConnections extends Activity{
 	private CustomProgressDialog customProgressDialog = null;
 
 	//此结构用来存储当前AT与服务器交互的操作类型，每种操作最多发送一次，多余的阻塞。
-	private int[] currentActionTypeWithServer = new int[8];
+	private int[] currentActionTypeWithServer = new int[10];
 	private Adapter adapter;
 	int selectedOperation = 0; 
 	private ITSClient itsClient = null;
@@ -527,15 +527,16 @@ public class AllConnections extends Activity{
 		if(position == 0){
 			disconnectAllButton.setVisibility(View.VISIBLE);
 			addDownloadTaskButton.setVisibility(View.GONE);
-			//for debug
-			//disconnectAllButton.setVisibility(View.VISIBLE);
-			//addDownloadTaskButton.setVisibility(View.VISIBLE);
 		}
+		//其他电脑设备
+		else if(PublicObjects.otherDevices[position -1].type >= 4) {
+			disconnectAllButton.setVisibility(View.VISIBLE);
+			addDownloadTaskButton.setVisibility(View.VISIBLE);
+		}
+		//其它手机设备
 		else{
+			addDownloadTaskButton.setVisibility(View.GONE);
 			disconnectAllButton.setVisibility(View.GONE);
-			if(PublicObjects.otherDevices[position -1].type >= 4){
-				addDownloadTaskButton.setVisibility(View.VISIBLE);
-			}
 		}
 
 
