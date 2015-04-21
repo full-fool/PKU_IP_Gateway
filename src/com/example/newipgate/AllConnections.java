@@ -152,10 +152,16 @@ public class AllConnections extends Activity{
 				break;
 			case 6:
 				Toast.makeText(AllConnections.this, "连接错误", Toast.LENGTH_SHORT).show();
+				break;
 			case 7:
 				Toast.makeText(AllConnections.this, optionArg + "下载成功", Toast.LENGTH_SHORT).show();
+				break;
 			case 8:
 				Toast.makeText(AllConnections.this, optionArg + "下载失败", Toast.LENGTH_SHORT).show();
+				break;
+			case 9:
+				Toast.makeText(AllConnections.this, "不在申请访问服务的范围内", Toast.LENGTH_SHORT).show();
+				break;
 	        default :
 	            break;
 	        }

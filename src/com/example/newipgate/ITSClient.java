@@ -378,7 +378,7 @@ public class ITSClient extends Service{
 					PublicObjects.getCurrentAllConnections().showInfo(5, null);
 					System.out.println("当前连接超过预定值");
 				} else if(response.contains("不在申请访问服务的范围内")) {
-					PublicObjects.getCurrentAllConnections().showInfo(6, null);
+					PublicObjects.getCurrentAllConnections().showInfo(9, null);
 					System.out.println("不在申请访问服务的范围内");
 				} else if(response.contains("ipgw_open_Failed")) {
 					PublicObjects.getCurrentAllConnections().showInfo(6, null);
@@ -442,7 +442,10 @@ public class ITSClient extends Service{
 
 
 					
-				}else{
+				}else if(response.contains("不在申请访问服务的范围内")){
+					PublicObjects.getCurrentAllConnections().showInfo(9, null);
+				}	
+				else{
 					PublicObjects.getCurrentAllConnections().showInfo(6, null);
 					System.out.println("unknown error");
 				}
@@ -472,6 +475,8 @@ public class ITSClient extends Service{
 				}else if(response.contains("wrong")){
 					PublicObjects.getCurrentAllConnections().showInfo(4, null);
 					System.out.println("wrong password");					
+				}else if(response.contains("不在申请访问服务的范围内")){
+					PublicObjects.getCurrentAllConnections().showInfo(9, null);
 				}
 				else{
 					PublicObjects.getCurrentAllConnections().showInfo(6, null);
@@ -806,7 +811,7 @@ public class ITSClient extends Service{
 						PublicObjects.otherDevices[i].ip = ((JSONObject)contents.get(i)).getString("ip");
 						PublicObjects.otherDevices[i].location = ((JSONObject)contents.get(i)).getString("location");
 						PublicObjects.otherDevices[i].owner = ((JSONObject)contents.get(i)).getString("owner");
-						System.out.println("device "+ i + " id is " + PublicObjects.otherDevices[i].device_id);
+						System.out.println("other device "+ i + " id is " + PublicObjects.otherDevices[i].device_id);
 						
 					}
 					PublicObjects.otherDeviceNum = contents.length();
