@@ -8,6 +8,8 @@ public class PublicObjects {
 	private static ITSClient publicItsClient;
 	public static DeviceInfo thisDeviceInfo = new DeviceInfo();
 	public static DeviceInfo[] otherDevices = new DeviceInfo[4];
+	private static String[] downloadTaskName = new String[100];
+	private static int allDownloadTasksNum = 0;
 	public static int otherDeviceNum = 0;
 	private static TextView infoStr;
 	public static WelcomePage currentWelcomePageActivity;
@@ -28,12 +30,40 @@ public class PublicObjects {
 
 	private static boolean otherDevicesIsInitiated = false;
 
+
 	public PublicObjects(){
-		
 	}
 	
 	
+	public static void addDownloadTaskName(String taskName){
+		downloadTaskName[allDownloadTasksNum] = taskName;
+		allDownloadTasksNum++;
+	}
 	
+	public static void deleteDownloadTaskWithIndex(int taskIndex){
+		allDownloadTasksNum--;
+		if(allDownloadTasksNum > 0){
+			downloadTaskName[taskIndex] = downloadTaskName[allDownloadTasksNum];			
+		}
+		downloadTaskName[allDownloadTasksNum] = null;
+	}
+	
+	public static void deleteDownloadTaskWithName(String taskName){
+		for (int i=0; i<allDownloadTasksNum; i++){
+			if (downloadTaskName[i].equals(taskName)){
+				deleteDownloadTaskWithIndex(i);
+				break;
+			}
+		}
+	}
+	
+	public static String getDownloadTaskNameWithIndex(int taskIndex){
+		return downloadTaskName[taskIndex];
+	}
+	
+	public static int getDownloadTasksNum(){
+		return allDownloadTasksNum;
+	}
 	
 	
 	public static void setCurrentActivity(int activityNum){

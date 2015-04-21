@@ -46,6 +46,13 @@
         android:screenOrientation="portrait">
            
     	</activity>
+    	<activity
+        android:name="com.example.newipgate.DownloadPage"
+        android:label="downloadPage"
+        android:theme="@style/AppTheme"
+        android:screenOrientation="portrait">
+           
+    	</activity>
     <service android:enabled="true" android:name="com.example.newipgate.ITSClient" />
     </application>
 

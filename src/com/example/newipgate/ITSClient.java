@@ -1017,6 +1017,7 @@ public class ITSClient extends Service{
 				String taskName = jsonObject.getString("file_name");
 					if(connectionString.equals("ok") ){
 						PublicObjects.getCurrentAllConnections().showInfo(7, taskName);
+						PublicObjects.deleteDownloadTaskWithName(taskName);
 					}
 					else{
 						PublicObjects.getCurrentAllConnections().showInfo(8, taskName);

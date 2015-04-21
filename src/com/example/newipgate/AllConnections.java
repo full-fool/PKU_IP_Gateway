@@ -368,6 +368,7 @@ public class AllConnections extends Activity{
 	            	String fileName = fileNameEditText.getText().toString();
 					String targetDeviceId = PublicObjects.otherDevices[selectedItem -1].device_id;
 					System.out.println("the task info\n" + downloadUrl + "\n" + fileName + "\n" + targetDeviceId);
+					PublicObjects.addDownloadTaskName(fileName);
 					//在此处写入将要和服务器的交互
 					itsClient.addDownloadTask(targetDeviceId, downloadUrl, fileName);
 					
@@ -642,6 +643,10 @@ public class AllConnections extends Activity{
 			Intent intent = new Intent(AllConnections.this, LoginActivity.class);
 			startActivity(intent);
 			
+		}
+		else if(item.getItemId() == R.id.check_download){
+			Intent intent = new Intent(AllConnections.this, DownloadPage.class);
+			startActivity(intent);			
 		}
 		  //return super.onOptionsItemSelected(item);
 		return true;

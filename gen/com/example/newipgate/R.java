@@ -22,6 +22,7 @@ public final class R {
         public static final int bggrey=0x7f060000;
         public static final int bgred=0x7f060001;
         public static final int bgrightlist=0x7f060006;
+        public static final int itemblue=0x7f060007;
         public static final int itemwhite=0x7f060002;
         public static final int pkured=0x7f060004;
         public static final int textgrey=0x7f060003;
@@ -74,11 +75,12 @@ public final class R {
         public static final int winphoneoff=0x7f020022;
     }
     public static final class id {
-        public static final int action_update=0x7f0b0017;
+        public static final int action_update=0x7f0b0019;
         public static final int add_downloadtask=0x7f0b0011;
         public static final int bigicon=0x7f0b000d;
-        public static final int change_user=0x7f0b0018;
+        public static final int change_user=0x7f0b001a;
         public static final int charge=0x7f0b0002;
+        public static final int check_download=0x7f0b001b;
         public static final int checkstate=0x7f0b0007;
         public static final int connect=0x7f0b0004;
         public static final int connect_charge=0x7f0b0010;
@@ -86,7 +88,9 @@ public final class R {
         public static final int connectionState=0x7f0b000e;
         public static final int disconnect_all=0x7f0b0006;
         public static final int disconnect_this=0x7f0b0005;
+        public static final int download_item_name=0x7f0b0016;
         public static final int download_link=0x7f0b0009;
+        public static final int download_page_listview=0x7f0b0017;
         public static final int file_name=0x7f0b000a;
         public static final int gridview=0x7f0b000b;
         public static final int icon=0x7f0b000c;
@@ -95,7 +99,7 @@ public final class R {
         public static final int listview=0x7f0b0013;
         public static final int listviewlayout=0x7f0b0012;
         public static final int loadingImageView=0x7f0b0014;
-        public static final int logo=0x7f0b0016;
+        public static final int logo=0x7f0b0018;
         public static final int passwd=0x7f0b0001;
         public static final int remember=0x7f0b0003;
         public static final int usname=0x7f0b0000;
@@ -107,8 +111,10 @@ public final class R {
         public static final int app_item=0x7f030003;
         public static final int control=0x7f030004;
         public static final int customprogressdialog=0x7f030005;
-        public static final int login_page=0x7f030006;
-        public static final int welcome_page=0x7f030007;
+        public static final int download_item=0x7f030006;
+        public static final int download_page=0x7f030007;
+        public static final int login_page=0x7f030008;
+        public static final int welcome_page=0x7f030009;
     }
     public static final class menu {
         public static final int allconnectionmenu=0x7f0a0000;
