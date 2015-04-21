@@ -64,7 +64,14 @@ public class WelcomePage extends Activity {
 						startActivity(it);
 					}
 				})
-			 	.setNegativeButton("否", null)
+			 	.setNegativeButton("否", new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// TODO Auto-generated method stub
+						chooseNextActivity();
+					}
+				})
 			 	.show();
 	            break;
 	        case 1 :

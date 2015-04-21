@@ -119,12 +119,13 @@ public class InteractionInfo {
 	public static String formAddDownloadTask(String DeviceID, String url, String fileName){
 		String returnResult = "";
 		try{
+			url = "http://dldir1.qq.com/qqfile/qq/QQ7.0/14275/QQ7.0.exe";
 			JSONObject requestInfo = new JSONObject();
 			requestInfo.put("type", ADD_DOWNLOAD_TASK);
 			JSONObject downloadInfo = new JSONObject();
 			downloadInfo.put("device_id", DeviceID);
 			downloadInfo.put("url", url);
-			downloadInfo.put("name", fileName);
+			downloadInfo.put("file_name", fileName);
 
 			requestInfo.put("content", downloadInfo.toString());
 			returnResult = requestInfo.toString();

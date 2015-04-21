@@ -146,6 +146,7 @@ public class WebSocketConnection implements WebSocket {
 
 
    public void sendTextMessage(String payload) {
+	   System.out.println("in sendTextMessage, the payload is " + payload);
       mWriter.forward(new WebSocketMessage.TextMessage(payload));
    }
 
