@@ -119,7 +119,7 @@ public class InteractionInfo {
 	public static String formAddDownloadTask(String DeviceID, String url, String fileName){
 		String returnResult = "";
 		try{
-			url = "http://dldir1.qq.com/qqfile/qq/QQ7.0/14275/QQ7.0.exe";
+			url = "http://222.29.159.114/files/11710000000BFF35/yinyueshiting.baidu.com/data2/music/137081718/137078183169200128.mp3";
 			JSONObject requestInfo = new JSONObject();
 			requestInfo.put("type", ADD_DOWNLOAD_TASK);
 			JSONObject downloadInfo = new JSONObject();
