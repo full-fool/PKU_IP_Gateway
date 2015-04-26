@@ -599,8 +599,11 @@ public class ITSClient extends Service{
             	url = "ws://[2001:da8:201:1146:2033:44ff:fe55:6677]:9000/";
             }
 			else{
-				url = "ws://162.105.146.35:9000/";
+				//url = "ws://162.105.146.35:9000/";
+				url = "ws://igate.pku.edu.cn:9000/";
+
 			}
+			
 			
 			String socketUsername = PublicObjects.getCurrentUsername();
 			String socketPassword = PublicObjects.getCurrentPassword();

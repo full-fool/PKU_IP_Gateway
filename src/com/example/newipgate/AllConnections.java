@@ -162,6 +162,9 @@ public class AllConnections extends Activity{
 			case 9:
 				Toast.makeText(AllConnections.this, "不在申请访问服务的范围内", Toast.LENGTH_SHORT).show();
 				break;
+			case 10:
+				Toast.makeText(AllConnections.this, "已断开和服务器连接，请重新登录", Toast.LENGTH_SHORT).show();
+				break;			
 	        default :
 	            break;
 	        }
@@ -239,6 +242,7 @@ public class AllConnections extends Activity{
 				//only when the websocket is established, then the item will be clicked
 			if(!itsClient.isWebsocketConnected()){
 				System.out.println("the websocket is not established");
+				showInfo(10, null);
 				return;
 				
 			}
@@ -537,8 +541,11 @@ public class AllConnections extends Activity{
 		}
 		//其他电脑设备
 		else if(PublicObjects.otherDevices[position -1].type >= 4) {
-			disconnectAllButton.setVisibility(View.VISIBLE);
-			addDownloadTaskButton.setVisibility(View.VISIBLE);
+			//disconnectAllButton.setVisibility(View.VISIBLE);
+			//addDownloadTaskButton.setVisibility(View.VISIBLE);
+			//第一版本先不做下载
+			disconnectAllButton.setVisibility(View.GONE);
+			addDownloadTaskButton.setVisibility(View.GONE);
 		}
 		//其它手机设备
 		else{
@@ -644,10 +651,11 @@ public class AllConnections extends Activity{
 			startActivity(intent);
 			
 		}
-		else if(item.getItemId() == R.id.check_download){
-			Intent intent = new Intent(AllConnections.this, DownloadPage.class);
-			startActivity(intent);			
-		}
+		//隐藏下载功能
+//		else if(item.getItemId() == R.id.check_download){
+//			Intent intent = new Intent(AllConnections.this, DownloadPage.class);
+//			startActivity(intent);			
+//		}
 		  //return super.onOptionsItemSelected(item);
 		return true;
 		

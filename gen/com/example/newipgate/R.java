@@ -80,7 +80,6 @@ public final class R {
         public static final int bigicon=0x7f0b000d;
         public static final int change_user=0x7f0b001a;
         public static final int charge=0x7f0b0002;
-        public static final int check_download=0x7f0b001b;
         public static final int checkstate=0x7f0b0007;
         public static final int connect=0x7f0b0004;
         public static final int connect_charge=0x7f0b0010;
