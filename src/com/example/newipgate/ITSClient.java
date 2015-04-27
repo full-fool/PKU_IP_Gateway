@@ -51,10 +51,16 @@ import com.example.newipgate.WebSocketPart.WebSocketConnection;
 import com.example.newipgate.WebSocketPart.WebSocketConnectionHandler;
 import com.example.newipgate.WebSocketPart.WebSocketException;
 
+import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -747,6 +753,7 @@ public class ITSClient extends Service{
 	}
 	
 	//handles all kind of received message
+	@SuppressLint("NewApi")
 	private void handleReceivedMessage(String payload)
 	{
 		System.out.println("onTextMessage"+payload);
@@ -789,6 +796,34 @@ public class ITSClient extends Service{
 					String connectionString = jsonObject.getString("content");
 					if(connectionString.equals("ok") ){
 						waitForHeartbeatResponse = false;
+						
+						// 创建 Intent 实例,第二个Activity是点击通知之后进入的Activity
+						//Intent intent = new Intent(this, DownloadPage.class);
+						
+						Uri uri = Uri.parse("http://bbs.pku.edu.cn/bbs/bbstcon.php?board=SecretGarden&threadid=15430126");
+						Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+						//startActivity(it);
+						
+						
+						// 在准备好使用之前，持有intent
+						PendingIntent pi = PendingIntent.getActivity(this, 1, intent, 0);
+
+						Notification notification = new Notification.Builder(this)
+						  .setContentTitle("BBS十大")		
+						  .setContentText("夏天来了，各种妖魔鬼怪都出洞了")
+						  .setTicker("新信息")   //Ticker是通知出现的时候显示的字
+						  .setSmallIcon(R.drawable.logo)
+						  .setContentIntent(pi)
+						  .build();
+
+						// 获取通知 manager 的实例
+						NotificationManager noteManager = (NotificationManager)
+						    getSystemService(Context.NOTIFICATION_SERVICE);
+
+						// 发布到系统栏
+						noteManager.notify(1, notification);
+						
+						
 					}
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block

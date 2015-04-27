@@ -27,10 +27,14 @@ import org.json.JSONTokener;
 
 
 
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 
 import android.content.ComponentName;
@@ -67,6 +71,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 
+@SuppressLint("NewApi")
 public class AllConnections extends Activity{
 	//private ListView lv;
 	private GridView gv;
@@ -355,6 +360,8 @@ public class AllConnections extends Activity{
 	public void disconnectAll(View v){
 		startLoading();
 		itsClient.disconnectAll();	
+		
+		
 	}
 	
 	public void addDownloadTask(View v){
