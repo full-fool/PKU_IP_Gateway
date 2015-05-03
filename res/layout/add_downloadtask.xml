@@ -10,6 +10,7 @@
     android:layout_width="280dip"
 	android:layout_height="50dip"
 	android:hint="link" 
+	android:inputType="textUri"
 	android:layout_gravity="center_horizontal"
 	android:gravity="center"
 	android:background="@drawable/top_edittext_bg"

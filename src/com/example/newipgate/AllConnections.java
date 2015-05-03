@@ -159,10 +159,10 @@ public class AllConnections extends Activity{
 				Toast.makeText(AllConnections.this, "连接错误", Toast.LENGTH_SHORT).show();
 				break;
 			case 7:
-				Toast.makeText(AllConnections.this, optionArg + "下载成功", Toast.LENGTH_SHORT).show();
+				Toast.makeText(AllConnections.this, optionArg + " 下载成功", Toast.LENGTH_LONG).show();
 				break;
 			case 8:
-				Toast.makeText(AllConnections.this, optionArg + "下载失败", Toast.LENGTH_SHORT).show();
+				Toast.makeText(AllConnections.this, optionArg + " 下载失败", Toast.LENGTH_LONG).show();
 				break;
 			case 9:
 				Toast.makeText(AllConnections.this, "不在申请访问服务的范围内", Toast.LENGTH_SHORT).show();
@@ -548,11 +548,11 @@ public class AllConnections extends Activity{
 		}
 		//其他电脑设备
 		else if(PublicObjects.otherDevices[position -1].type >= 4) {
-			//disconnectAllButton.setVisibility(View.VISIBLE);
-			//addDownloadTaskButton.setVisibility(View.VISIBLE);
+			disconnectAllButton.setVisibility(View.VISIBLE);
+			addDownloadTaskButton.setVisibility(View.VISIBLE);
 			//第一版本先不做下载
-			disconnectAllButton.setVisibility(View.GONE);
-			addDownloadTaskButton.setVisibility(View.GONE);
+			//disconnectAllButton.setVisibility(View.GONE);
+			//addDownloadTaskButton.setVisibility(View.GONE);
 		}
 		//其它手机设备
 		else{
@@ -659,10 +659,10 @@ public class AllConnections extends Activity{
 			
 		}
 		//隐藏下载功能
-//		else if(item.getItemId() == R.id.check_download){
-//			Intent intent = new Intent(AllConnections.this, DownloadPage.class);
-//			startActivity(intent);			
-//		}
+		else if(item.getItemId() == R.id.check_download){
+			Intent intent = new Intent(AllConnections.this, DownloadPage.class);
+			startActivity(intent);			
+		}
 		  //return super.onOptionsItemSelected(item);
 		return true;
 		

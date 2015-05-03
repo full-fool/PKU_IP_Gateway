@@ -12,12 +12,12 @@
         android:showAsAction="never"
         android:title="切换用户"/>
       
-      <!--item
+      <item
        	android:id="@+id/check_download"
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="查看未完成下载" 
-      /-->
+      />
     
       
    

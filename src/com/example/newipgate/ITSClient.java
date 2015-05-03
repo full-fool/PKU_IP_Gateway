@@ -97,6 +97,9 @@ public class ITSClient extends Service{
 	private final int GET_DEVICES_LIST = 3;
 	private final int UPDATE_SELF_STATUS = 1;
 	private final int ADD_DOWNLOAD_TASK = 9;
+	private static final int DOWNLOAD_PENDING = 1;
+	private static final int DOWNLOAD_SUCCEEDED = 2;
+	private static final int DOWNLOAD_FAILED = 3;
 
 
 	
@@ -603,6 +606,8 @@ public class ITSClient extends Service{
             
 			if(hasIPv6() == 1){
             	url = "ws://[2001:da8:201:1146:2033:44ff:fe55:6677]:9000/";
+				//url = "ws://igate.pku.edu.cn:9000/";
+
             }
 			else{
 				//url = "ws://162.105.146.35:9000/";
@@ -806,6 +811,8 @@ public class ITSClient extends Service{
 						
 						
 						// 在准备好使用之前，持有intent
+						
+						/*
 						PendingIntent pi = PendingIntent.getActivity(this, 1, intent, 0);
 
 						Notification notification = new Notification.Builder(this)
@@ -822,6 +829,8 @@ public class ITSClient extends Service{
 
 						// 发布到系统栏
 						noteManager.notify(1, notification);
+						
+						*/
 						
 						
 					}
@@ -1052,14 +1061,24 @@ public class ITSClient extends Service{
 			{
 				try {
 				String connectionString = jsonObject.getString("content");
-				String taskName = jsonObject.getString("file_name");
-					if(connectionString.equals("ok") ){
+				JSONObject contentJsonObject = new JSONObject(connectionString);
+				String taskName = contentJsonObject.getString("file_name");
+				String downloadResult = contentJsonObject.getString("result");
+					if(downloadResult.equals("ok") ){
+						System.out.println("taskname " + taskName + " succedded");
 						PublicObjects.getCurrentAllConnections().showInfo(7, taskName);
-						PublicObjects.deleteDownloadTaskWithName(taskName);
+						//PublicObjects.deleteDownloadTaskWithName(taskName);
+						PublicObjects.setDownloadTaskStatusWithName(taskName, DOWNLOAD_SUCCEEDED);
 					}
 					else{
+						System.out.println("taskname " + taskName + " faild");
 						PublicObjects.getCurrentAllConnections().showInfo(8, taskName);
+						//PublicObjects.deleteDownloadTaskWithName(taskName);
+						PublicObjects.setDownloadTaskStatusWithName(taskName, DOWNLOAD_FAILED);
+
 					}
+					PublicObjects.setDownloadUpdate(true);
+
 				} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
