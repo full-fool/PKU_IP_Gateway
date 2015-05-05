@@ -87,8 +87,10 @@ public class DownloadPage extends Activity {
 			public void onItemClick(AdapterView<?> parent, View view,
 			  int position, long id) {
 				//only when the websocket is established, then the item will be clicked
-				String tempTaskName = PublicObjects.getDownloadTaskNameWithIndex(position);
-				selectedItemPosition = position;
+				int allDownloadTakNum = PublicObjects.getDownloadTasksNum();
+				selectedItemPosition = allDownloadTakNum - position - 1;
+
+				String tempTaskName = PublicObjects.getDownloadTaskNameWithIndex(selectedItemPosition);
 				new AlertDialog.Builder(DownloadPage.this) 
 			 	.setTitle("删除任务")
 			 	.setMessage("您确定要删除任务 " + tempTaskName + " 吗?")
@@ -119,8 +121,8 @@ public class DownloadPage extends Activity {
 		    });
 		
 		
-		PublicObjects.addDownloadTaskName("testTask1");
-		PublicObjects.addDownloadTaskName("testTask2");
+		//PublicObjects.addDownloadTaskName("testTask1");
+		//PublicObjects.addDownloadTaskName("testTask2");
 		
 	}
 	

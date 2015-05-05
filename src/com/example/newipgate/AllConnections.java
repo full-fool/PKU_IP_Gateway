@@ -103,6 +103,10 @@ public class AllConnections extends Activity{
 	private ArrayList<HashMap<String, Object>> items=new ArrayList<HashMap<String, Object>>();
 	
 	
+    private EditText fileNameEditText; 
+
+	
+	
 	Handler hasStatusChangedHandler = new Handler();
 	Runnable hasStatusChanged = new Runnable() {
 		
@@ -367,8 +371,37 @@ public class AllConnections extends Activity{
 	public void addDownloadTask(View v){
 		 LayoutInflater factory = LayoutInflater.from(this); 
 	        final View textEntryView = factory.inflate(R.layout.add_downloadtask, null); 
-	        final EditText downloadUrlEditText = (EditText) textEntryView.findViewById(R.id.download_link); 
-	        final EditText fileNameEditText = (EditText)textEntryView.findViewById(R.id.file_name); 
+	        final EditText downloadUrlEditText = (EditText) textEntryView.findViewById(R.id.download_link);
+	        fileNameEditText = (EditText)textEntryView.findViewById(R.id.file_name); 
+	        
+	        //此处用来处理downloadUrlEditText失去焦点时的自动文件名补全功能
+	        downloadUrlEditText.setOnFocusChangeListener(new android.view.View.OnFocusChangeListener() {  
+	            @Override  
+	            public void onFocusChange(View v, boolean hasFocus) {  
+	                if(hasFocus) {
+	        return;
+	        } else {
+            	String downloadUrl = downloadUrlEditText.getText().toString();
+            	if (!downloadUrl.equals("link") && !downloadUrl.endsWith("/")){
+            		int urlLength = downloadUrl.length();
+            		int lastSlashLocation = -1;
+            		for(int j=urlLength-1; j>=0; j--){
+            			if (downloadUrl.charAt(j) == '/')
+            			{
+            				lastSlashLocation = j;
+            				System.out.println("the index of / is " + lastSlashLocation);
+            				break;
+            			}
+            		}
+            		if(lastSlashLocation != -1){
+            			String fileNameSubString = downloadUrl.substring(lastSlashLocation+1, urlLength);
+            			fileNameEditText.setText(fileNameSubString);
+            			
+            		}
+            	}
+	        }
+	            }
+	        });
 	        AlertDialog.Builder ad1 = new AlertDialog.Builder(AllConnections.this); 
 	        ad1.setTitle("发起下载任务"); 
 	        ad1.setIcon(R.drawable.download_dialog); 

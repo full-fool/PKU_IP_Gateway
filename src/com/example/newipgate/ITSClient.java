@@ -607,11 +607,16 @@ public class ITSClient extends Service{
 			if(hasIPv6() == 1){
             	url = "ws://[2001:da8:201:1146:2033:44ff:fe55:6677]:9000/";
 				//url = "ws://igate.pku.edu.cn:9000/";
+				//url = "ws://115.27.80.152:9000/";
+
 
             }
 			else{
 				//url = "ws://162.105.146.35:9000/";
 				url = "ws://igate.pku.edu.cn:9000/";
+				//url = "ws://115.27.80.152:9000";
+				//url = "ws://115.27.80.152:9000/";
+
 
 			}
 			
@@ -1078,6 +1083,45 @@ public class ITSClient extends Service{
 
 					}
 					PublicObjects.setDownloadUpdate(true);
+
+				} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				}
+			}
+			else if (infoType == 110)
+			{
+				try {
+				String connectionString = jsonObject.getString("content");
+				JSONObject contentJsonObject = new JSONObject(connectionString);
+				String source = contentJsonObject.getString("source");
+				String title = contentJsonObject.getString("title");
+				String msgContent = contentJsonObject.getString("content");
+
+				String date = contentJsonObject.getString("date");
+				String content = contentJsonObject.getString("content");
+				String resultUrl = contentJsonObject.getString("url");
+				System.out.println("the result url is " + resultUrl);
+				Uri uri = Uri.parse(resultUrl);
+				Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+
+				PendingIntent pi = PendingIntent.getActivity(this, 1, intent, 0);
+
+				Notification notification = new Notification.Builder(this)
+				  .setContentTitle(title)		
+				  .setContentText(msgContent)
+				  .setTicker("新信息")   //Ticker是通知出现的时候显示的字
+				  .setSmallIcon(R.drawable.logo)
+				  .setContentIntent(pi)
+				  .build();
+
+				// 获取通知 manager 的实例
+				NotificationManager noteManager = (NotificationManager)
+				    getSystemService(Context.NOTIFICATION_SERVICE);
+
+				// 发布到系统栏
+				noteManager.notify(1, notification);
+				
 
 				} catch (JSONException e) {
 				// TODO Auto-generated catch block

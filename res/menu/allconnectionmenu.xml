@@ -16,7 +16,7 @@
        	android:id="@+id/check_download"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="查看未完成下载" 
+        android:title="查看下载" 
       />
     
       

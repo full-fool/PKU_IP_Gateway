@@ -21,6 +21,8 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -58,7 +60,7 @@ public class LoginActivity extends Activity{
 	private Switch charge;
 	private Switch remember;
 
-	private Encrypt encrypt;
+	private Encrypt encrypt = null;
 	private TextView infoStr;
 	private ITSClient itsClient = null;
 	private Boolean hasbind = false;
@@ -248,6 +250,7 @@ public class LoginActivity extends Activity{
 		((EditText)findViewById(R.id.usname)).setText(username);
 		((EditText)findViewById(R.id.passwd)).setText(password);
 
+
 	}
 	
 	protected void onResume(){
@@ -375,7 +378,8 @@ public class LoginActivity extends Activity{
 	}
 	
 	public String getPassword(){
-		return  ((EditText)findViewById(R.id.passwd)).getText().toString(); 
+		String editTextPassword = ((EditText)findViewById(R.id.passwd)).getText().toString();  
+		return  editTextPassword;
 	}
 
 	

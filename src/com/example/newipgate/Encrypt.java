@@ -11,6 +11,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import android.content.Context;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
 import android.util.Log;
@@ -29,8 +31,10 @@ public class Encrypt {
 			Cipher c = Cipher.getInstance("AES");
 			c.init(Cipher.ENCRYPT_MODE, sks);
 			encryptText = c.doFinal(text.getBytes("UTF-8"));
+			System.out.println("in encrypt, before encrypt text is " + text + " and after is " + encryptText);
 			return Base64.encodeToString(encryptText, Base64.CRLF);
 		} catch(Exception e) {
+	        e.printStackTrace();
 			return null;
 		}
 	}
@@ -48,8 +52,18 @@ public class Encrypt {
 		}
 	}
 	private byte[] getKey() throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
-		TelephonyManager telephonyManager = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
-		byte[] seed = telephonyManager.getDeviceId().getBytes();
+		//TelephonyManager telephonyManager = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
+		//System.out.println("in getKey, the device id is " + telephonyManager.getDeviceId());
+		
+		
+		WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+		 
+		WifiInfo info = wifi.getConnectionInfo();
+		 
+		byte[] seed = info.getMacAddress().getBytes();
+		
+		
+		//byte[] seed = telephonyManager.getDeviceId().getBytes();
 		if(seed == null) {
 			Log.i(TAG, "can't get IMEI");
 			seed = "this is my imei number".getBytes();
