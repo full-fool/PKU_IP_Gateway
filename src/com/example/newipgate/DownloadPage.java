@@ -62,11 +62,15 @@ public class DownloadPage extends Activity {
 		
 		@Override
 		public void run() {
+			System.out.println("in checkUpdateRunnable, the bool is " + PublicObjects.getDownloadUpdate());
 			if(PublicObjects.getDownloadUpdate()){
 				PublicObjects.setDownloadUpdate(false);
 				refreshPage();
+			}
+			if(PublicObjects.getCurrentActivity() == 3){
 				checkUpdateHandler.postDelayed(checkUpdateRunnable, 1000);
 			}
+
 		}
 	};
 

@@ -1082,12 +1082,12 @@ public class ITSClient extends Service{
 						PublicObjects.setDownloadTaskStatusWithName(taskName, DOWNLOAD_FAILED);
 
 					}
-					PublicObjects.setDownloadUpdate(true);
 
 				} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				}
+				PublicObjects.setDownloadUpdate(true);
 			}
 			else if (infoType == 110)
 			{
